@@ -7,7 +7,6 @@ using Microsoft.ML.Data;
 using Microsoft.ML.Trainers;
 using OfficeOpenXml;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace RealEstateDecisionSupportSystemApp;
@@ -15,11 +14,14 @@ namespace RealEstateDecisionSupportSystemApp;
 public partial class Form1 : Form
 {
 	private List<HouseData> loadedData = new();
+
 	private MLContext mlContext;
 	private ITransformer trainedModel;
-	private PredictionEngine<HouseData, HousePrediction> predictionEngine;
+	private PredictionEngine<ModelInput, HousePrediction> predictionEngine;
 	private IDataView fullDataView;
+
 	private CartesianChart chartFeatures;
+
 	private float modelBias;
 	private List<ModelCoefficientInfo> modelCoefficients = new();
 
@@ -36,13 +38,19 @@ public partial class Form1 : Form
 
 		lblModelState.Text = "Модель не обучена";
 		lblModelState.ForeColor = Color.DarkRed;
+
 		lblStatus.Text = "";
 		lblR2.Text = "";
 		lblMAE.Text = "";
 		lblMSE.Text = "";
 		lblFormula.Text = "";
 
+		lblPredictedPrice.Text = "-";
+		lblDifference.Text = "-";
+
 		btnLearn.Enabled = false;
+		btnDecision.Text = "Нет решения";
+		btnDecision.BackColor = SystemColors.ControlDark;
 
 		CreateFeatureChartHost();
 	}
@@ -77,10 +85,10 @@ public partial class Form1 : Form
 			FillNeighborhoodComboBox();
 
 			lblStatus.Text = $"Загружено объектов: {loadedData.Count}";
-			btnLearn.Enabled = true;
-
 			lblModelState.Text = "Данные загружены";
 			lblModelState.ForeColor = Color.DarkOrange;
+
+			btnLearn.Enabled = true;
 
 			MessageBox.Show(
 				$"Успешно загружено {loadedData.Count} объектов.",
@@ -98,24 +106,6 @@ public partial class Form1 : Form
 		}
 	}
 
-	private void FillNeighborhoodComboBox()
-	{
-		var neighborhoods = loadedData
-			.Where(x => !string.IsNullOrWhiteSpace(x.Neighborhood))
-			.Select(x => x.Neighborhood.Trim())
-			.Distinct()
-			.OrderBy(x => x)
-			.ToList();
-
-		cmbNeighborhood.DataSource = null;
-		cmbNeighborhood.Items.Clear();
-
-		cmbNeighborhood.DataSource = neighborhoods;
-
-		if (cmbNeighborhood.Items.Count > 0)
-			cmbNeighborhood.SelectedIndex = 0;
-	}
-
 	private void BtnLearn_Click(object sender, EventArgs e)
 	{
 		if (loadedData == null || loadedData.Count == 0)
@@ -128,100 +118,63 @@ public partial class Form1 : Form
 		{
 			mlContext = new MLContext(seed: 1);
 
-			fullDataView = mlContext.Data.LoadFromEnumerable(loadedData);
+			var preparedData = PrepareModelData(loadedData);
+			fullDataView = mlContext.Data.LoadFromEnumerable(preparedData);
 
 			var split = mlContext.Data.TrainTestSplit(fullDataView, testFraction: 0.2);
 
 			var pipeline =
-				mlContext.Transforms.Categorical.OneHotEncoding(
-					outputColumnName: "BrickEncoded",
-					inputColumnName: nameof(HouseData.Brick))
+				mlContext.Transforms.Concatenate(
+					"Features",
+					nameof(ModelInput.SqFt),
+					nameof(ModelInput.Bedrooms),
+					nameof(ModelInput.Bathrooms),
+					nameof(ModelInput.IsBrick),
+					nameof(ModelInput.IsNorth),
+					nameof(ModelInput.IsWest))
 				.Append(
-					mlContext.Transforms.Categorical.OneHotEncoding(
-						outputColumnName: "NeighborhoodEncoded",
-						inputColumnName: nameof(HouseData.Neighborhood)))
-				.Append(
-					mlContext.Transforms.Concatenate(
-						"Features",
-						nameof(HouseData.SqFt),
-						nameof(HouseData.Bedrooms),
-						nameof(HouseData.Bathrooms),
-						"BrickEncoded",
-						"NeighborhoodEncoded"))
-				.Append(
-					mlContext.Regression.Trainers.Sdca(
-						labelColumnName: nameof(HouseData.Price),
+					mlContext.Regression.Trainers.Ols(
+						labelColumnName: nameof(ModelInput.Price),
 						featureColumnName: "Features"));
 
-			trainedModel = pipeline.Fit(split.TrainSet);
+			// 1) Честная оценка на test
+			var evalModel = pipeline.Fit(split.TrainSet);
 
-			var predictions = trainedModel.Transform(split.TestSet);
+			var testPredictions = evalModel.Transform(split.TestSet);
 			var metrics = mlContext.Regression.Evaluate(
-				predictions,
-				labelColumnName: nameof(HouseData.Price),
+				testPredictions,
+				labelColumnName: nameof(ModelInput.Price),
 				scoreColumnName: "Score");
 
-			predictionEngine =
-				mlContext.Model.CreatePredictionEngine<HouseData, HousePrediction>(trainedModel);
+			// 2) Рабочая модель для UI — обучаем на всех данных
+			trainedModel = pipeline.Fit(fullDataView);
 
-			var coeffs = GetLinearRegressionCoefficients(trainedModel, fullDataView);
+			predictionEngine =
+				mlContext.Model.CreatePredictionEngine<ModelInput, HousePrediction>(trainedModel);
+
+			var coeffs = GetLinearRegressionCoefficients(trainedModel);
+
+			modelBias = coeffs.Bias;
+			modelCoefficients = coeffs.Coefficients;
 
 			lblR2.Text = $"R² = {metrics.RSquared:F3}";
 			lblMAE.Text = $"MAE = {metrics.MeanAbsoluteError:F0}";
 			lblMSE.Text = $"MSE = {metrics.MeanSquaredError:F0}";
 			lblFormula.Text = BuildFormulaText(coeffs.Bias, coeffs.Coefficients);
+
 			FillCoefficientsTable(coeffs.Coefficients);
 			BuildFeatureImportanceChart(coeffs.Coefficients);
+			LoadValidationTable();
 
 			lblModelState.Text = "Модель обучена";
 			lblModelState.ForeColor = Color.DarkGreen;
 
-			modelBias = coeffs.Bias;
-			modelCoefficients = coeffs.Coefficients;
-
-			MessageBox.Show("Модель успешно обучена.");
+			MessageBox.Show("Линейная регрессия OLS успешно обучена.");
 		}
 		catch (Exception ex)
 		{
 			MessageBox.Show("Ошибка обучения:\n" + ex.Message);
 		}
-	}
-
-	private float GetCoefficientValue(string featureNamePart)
-	{
-		var coeff = modelCoefficients.FirstOrDefault(c =>
-			c.FeatureName.Contains(featureNamePart, StringComparison.OrdinalIgnoreCase));
-
-		return coeff?.Weight ?? 0f;
-	}
-
-	private void ShowInfluenceFactors(HouseData house)
-	{
-		float sqftCoef = GetCoefficientValueExact("Площадь");
-		float bedroomsCoef = GetCoefficientValueExact("Спальни");
-		float bathroomsCoef = GetCoefficientValueExact("Ванные");
-
-		float sqftImpact = house.SqFt * sqftCoef;
-		float bedroomsImpact = house.Bedrooms * bedroomsCoef;
-		float bathroomsImpact = house.Bathrooms * bathroomsCoef;
-
-		float brickImpact = GetBrickImpact(house.Brick);
-		float neighborhoodImpact = GetNeighborhoodImpact(house.Neighborhood);
-
-		lblImpactSqFt.Text = FormatMoney(sqftImpact);
-		lblImpactBedrooms.Text = FormatMoney(bedroomsImpact);
-		lblImpactBathrooms.Text = FormatMoney(bathroomsImpact);
-		lblImpactBrick.Text = FormatMoney(brickImpact);
-		lblImpactNeighborhood.Text = $"{house.Neighborhood}: {FormatMoney(neighborhoodImpact)}";
-
-		// Если у тебя есть отдельный label для базовой части модели:
-		// lblImpactBase.Text = FormatMoney(modelBias);
-	}
-
-	private string FormatMoney(float value)
-	{
-		string sign = value >= 0 ? "+" : "-";
-		return $"{sign}{Math.Abs(value):N0} €";
 	}
 
 	private void BtnPredict_Click(object sender, EventArgs e)
@@ -234,33 +187,25 @@ public partial class Form1 : Form
 
 		try
 		{
-			var house = new HouseData
-			{
-				SqFt = ParseInputFloat(nudSqFt.Value.ToString(), "Площадь"),
-				Bedrooms = ParseInputFloat(nudBedrooms.Value.ToString(), "Спальни"),
-				Bathrooms = ParseInputFloat(nudBathrooms.Value.ToString(), "Ванные"),
-				Brick = chkBrick.Checked ? "Yes" : "No",
-				Neighborhood = cmbNeighborhood.Text,
-				Price = 0
-			};
-
-			if (string.IsNullOrWhiteSpace(house.Neighborhood))
+			if (string.IsNullOrWhiteSpace(cmbNeighborhood.Text))
 			{
 				MessageBox.Show("Выберите район.");
 				return;
 			}
 
-			var result = predictionEngine.Predict(house);
+			var modelInput = BuildModelInputFromUi();
 
-			lblPredictedPrice.Text = $"{result.PredictedPrice:F0} €";
+			var result = predictionEngine.Predict(modelInput);
 
-			ShowInfluenceFactors(house);
+			lblPredictedPrice.Text = $"{result.PredictedPrice:N0} €";
 
-			if (TryParseFloatSafe(nudActualPrice.Value.ToString(), out float actualPrice) && actualPrice > 0)
+			ShowInfluenceFactors(modelInput);
+
+			float actualPrice = (float)nudActualPrice.Value;
+			if (actualPrice > 0)
 			{
 				float diff = result.PredictedPrice - actualPrice;
-
-				lblDifference.Text = $"{diff:F0} €";
+				lblDifference.Text = $"{diff:N0} €";
 
 				if (diff > 10000)
 				{
@@ -289,6 +234,98 @@ public partial class Form1 : Form
 		{
 			MessageBox.Show("Ошибка прогноза:\n" + ex.Message);
 		}
+	}
+
+	private void BtnClear_Click(object sender, EventArgs e)
+	{
+		nudSqFt.Value = 0;
+		nudBedrooms.Value = 0;
+		nudBathrooms.Value = 0;
+		nudActualPrice.Value = 0;
+		chkBrick.Checked = false;
+
+		if (cmbNeighborhood.Items.Count > 0)
+			cmbNeighborhood.SelectedIndex = 0;
+
+		lblPredictedPrice.Text = "-";
+		lblDifference.Text = "-";
+
+		lblImpactSqFt.Text = "-";
+		lblImpactBedrooms.Text = "-";
+		lblImpactBathrooms.Text = "-";
+		lblImpactBrick.Text = "-";
+		lblImpactNeighborhood.Text = "-";
+
+		btnDecision.Text = "Нет решения";
+		btnDecision.BackColor = SystemColors.ControlDark;
+	}
+
+	private void BtnSample_Click(object sender, EventArgs e)
+	{
+		nudSqFt.Value = 2000;
+		nudBedrooms.Value = 3;
+		nudBathrooms.Value = 2;
+		nudActualPrice.Value = 150000;
+		chkBrick.Checked = true;
+
+		if (cmbNeighborhood.Items.Count > 0)
+		{
+			int index = cmbNeighborhood.Items.IndexOf("West");
+			cmbNeighborhood.SelectedIndex = index >= 0 ? index : 0;
+		}
+	}
+
+	private void FillNeighborhoodComboBox()
+	{
+		var neighborhoods = loadedData
+			.Where(x => !string.IsNullOrWhiteSpace(x.Neighborhood))
+			.Select(x => x.Neighborhood.Trim())
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.OrderBy(x => x)
+			.ToList();
+
+		cmbNeighborhood.DataSource = null;
+		cmbNeighborhood.Items.Clear();
+
+		cmbNeighborhood.DataSource = neighborhoods;
+
+		if (cmbNeighborhood.Items.Count > 0)
+			cmbNeighborhood.SelectedIndex = 0;
+	}
+
+	private ModelInput BuildModelInputFromUi()
+	{
+		string neighborhood = cmbNeighborhood.Text?.Trim() ?? "";
+
+		return new ModelInput
+		{
+			Price = 0f,
+			SqFt = (float)nudSqFt.Value,
+			Bedrooms = (float)nudBedrooms.Value,
+			Bathrooms = (float)nudBathrooms.Value,
+			IsBrick = chkBrick.Checked ? 1f : 0f,
+			IsNorth = string.Equals(neighborhood, "North", StringComparison.OrdinalIgnoreCase) ? 1f : 0f,
+			IsWest = string.Equals(neighborhood, "West", StringComparison.OrdinalIgnoreCase) ? 1f : 0f
+		};
+	}
+
+	private List<ModelInput> PrepareModelData(List<HouseData> source)
+	{
+		return source.Select(x =>
+		{
+			string neighborhood = x.Neighborhood?.Trim() ?? "";
+
+			return new ModelInput
+			{
+				Price = x.Price,
+				SqFt = x.SqFt,
+				Bedrooms = x.Bedrooms,
+				Bathrooms = x.Bathrooms,
+				IsBrick = string.Equals(x.Brick, "Yes", StringComparison.OrdinalIgnoreCase) ? 1f : 0f,
+				IsNorth = string.Equals(neighborhood, "North", StringComparison.OrdinalIgnoreCase) ? 1f : 0f,
+				IsWest = string.Equals(neighborhood, "West", StringComparison.OrdinalIgnoreCase) ? 1f : 0f
+			};
+		}).ToList();
 	}
 
 	private List<HouseData> LoadHouseDataFromExcel(string filePath)
@@ -393,109 +430,75 @@ public partial class Form1 : Form
 		return float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
 	}
 
-	private float ParseInputFloat(string text, string fieldName)
-	{
-		if (!TryParseFloatSafe(text, out float value))
-			throw new Exception($"Некорректное значение поля: {fieldName}");
-
-		return value;
-	}
-
 	private (float Bias, List<ModelCoefficientInfo> Coefficients) GetLinearRegressionCoefficients(
-	ITransformer model,
-	IDataView trainingData)
+	ITransformer model)
 	{
-		IDataView transformedData = model.Transform(trainingData);
-
-		var chain = model as TransformerChain<RegressionPredictionTransformer<LinearRegressionModelParameters>>;
+		var chain = model as TransformerChain<RegressionPredictionTransformer<OlsModelParameters>>;
 		if (chain == null)
-			throw new Exception("Не удалось привести модель к TransformerChain линейной регрессии.");
+			throw new Exception("Не удалось привести модель к OLS-регрессии.");
 
-		var regressionTransformer = chain.LastTransformer;
-		var linearModel = regressionTransformer.Model;
+		var olsModel = chain.LastTransformer.Model;
 
-		float bias = linearModel.Bias;
-		float[] weightValues = linearModel.Weights.ToArray();
+		float bias = olsModel.Bias;
+		float[] weights = olsModel.Weights.ToArray();
 
-		var featureColumn = transformedData.Schema["Features"];
-		VBuffer<ReadOnlyMemory<char>> slotNamesBuffer = default;
-		featureColumn.GetSlotNames(ref slotNamesBuffer);
-
-		var slotNameValues = slotNamesBuffer.DenseValues().ToArray();
+		string[] featureNames =
+		{
+		"Площадь",
+		"Спальни",
+		"Ванные",
+		"Кирпичный дом",
+		"Район North",
+		"Район West"
+	};
 
 		var result = new List<ModelCoefficientInfo>();
 
-		for (int i = 0; i < weightValues.Length; i++)
+		for (int i = 0; i < weights.Length; i++)
 		{
-			string featureName =
-				(i < slotNameValues.Length && !slotNameValues[i].IsEmpty)
-				? slotNameValues[i].ToString()
-				: $"Feature_{i}";
-
 			result.Add(new ModelCoefficientInfo
 			{
-				FeatureName = BeautifyFeatureName(featureName),
-				Weight = weightValues[i]
+				FeatureName = i < featureNames.Length ? featureNames[i] : $"Feature_{i}",
+				Weight = weights[i]
 			});
 		}
 
 		return (bias, result);
 	}
 
-	private string BeautifyFeatureName(string rawName)
-	{
-		if (string.Equals(rawName, "SqFt", StringComparison.OrdinalIgnoreCase))
-			return "Площадь";
-
-		if (string.Equals(rawName, "Bedrooms", StringComparison.OrdinalIgnoreCase))
-			return "Спальни";
-
-		if (string.Equals(rawName, "Bathrooms", StringComparison.OrdinalIgnoreCase))
-			return "Ванные";
-
-		if (rawName.Contains("Brick", StringComparison.OrdinalIgnoreCase) &&
-			rawName.Contains("Yes", StringComparison.OrdinalIgnoreCase))
-			return "Кирпичный дом = Yes";
-
-		if (rawName.Contains("Brick", StringComparison.OrdinalIgnoreCase) &&
-			rawName.Contains("No", StringComparison.OrdinalIgnoreCase))
-			return "Кирпичный дом = No";
-
-		if (rawName.Contains("North", StringComparison.OrdinalIgnoreCase))
-			return "Район North";
-
-		if (rawName.Contains("West", StringComparison.OrdinalIgnoreCase))
-			return "Район West";
-
-		if (rawName.Contains("East", StringComparison.OrdinalIgnoreCase))
-			return "Район East";
-
-		return rawName;
-	}
-
 	private string BuildFormulaText(float bias, List<ModelCoefficientInfo> coefficients)
 	{
+		var map = coefficients.ToDictionary(x => x.FeatureName, x => x.Weight);
+
+		float sqft = map.GetValueOrDefault("Площадь");
+		float bedrooms = map.GetValueOrDefault("Спальни");
+		float bathrooms = map.GetValueOrDefault("Ванные");
+		float brick = map.GetValueOrDefault("Кирпичный дом");
+		float north = map.GetValueOrDefault("Район North");
+		float west = map.GetValueOrDefault("Район West");
+
 		var sb = new StringBuilder();
-
 		sb.AppendLine($"Price = {bias:F3}");
-
-		foreach (var c in coefficients)
-		{
-			string sign = c.Weight >= 0 ? "+" : "-";
-			sb.AppendLine($"{sign} {Math.Abs(c.Weight):F3} * {c.FeatureName}");
-		}
+		sb.AppendLine($"{FormatSignedFormula(sqft)} * SqFt");
+		sb.AppendLine($"{FormatSignedFormula(bedrooms)} * Bedrooms");
+		sb.AppendLine($"{FormatSignedFormula(bathrooms)} * Bathrooms");
+		sb.AppendLine($"{FormatSignedFormula(brick)} * IsBrick");
+		sb.AppendLine($"{FormatSignedFormula(north)} * IsNorth");
+		sb.AppendLine($"{FormatSignedFormula(west)} * IsWest");
+		sb.AppendLine();
+		sb.AppendLine("Где:");
+		sb.AppendLine("IsBrick = 1 для кирпичного дома, иначе 0");
+		sb.AppendLine("IsNorth = 1 для района North, иначе 0");
+		sb.AppendLine("IsWest = 1 для района West, иначе 0");
+		sb.AppendLine("East — базовая категория, её вклад равен 0");
 
 		return sb.ToString();
 	}
 
-	private string GetImpact(float weight)
+	private string FormatSignedFormula(float value)
 	{
-		float abs = Math.Abs(weight);
-
-		if (abs >= 20000) return "Очень сильное";
-		if (abs >= 5000) return "Сильное";
-		if (abs >= 1000) return "Среднее";
-		return "Слабое";
+		string sign = value >= 0 ? "+" : "-";
+		return $"{sign} {Math.Abs(value):F3}";
 	}
 
 	private void FillCoefficientsTable(List<ModelCoefficientInfo> coefficients)
@@ -506,9 +509,10 @@ public partial class Form1 : Form
 				Признак = c.FeatureName,
 				Коэффициент = Math.Round(c.Weight, 3),
 				Влияние = GetImpact(c.Weight),
-				Направление = c.Weight > 0 ? "Увеличивает цену" :
-							   c.Weight < 0 ? "Уменьшает цену" :
-							   "Не влияет"
+				Направление =
+					c.Weight > 0 ? "Увеличивает цену" :
+					c.Weight < 0 ? "Уменьшает цену" :
+					"Не влияет"
 			})
 			.ToList();
 
@@ -538,6 +542,16 @@ public partial class Form1 : Form
 		}
 	}
 
+	private string GetImpact(float weight)
+	{
+		float abs = Math.Abs(weight);
+
+		if (abs >= 20000) return "Очень сильное";
+		if (abs >= 5000) return "Сильное";
+		if (abs >= 1000) return "Среднее";
+		return "Слабое";
+	}
+
 	private void BuildFeatureImportanceChart(List<ModelCoefficientInfo> coefficients)
 	{
 		if (chartFeatures == null)
@@ -549,32 +563,32 @@ public partial class Form1 : Form
 
 		chartFeatures.Series = new ISeries[]
 		{
-		new RowSeries<double>
-		{
-			Name = "Важность признаков",
-			Values = sorted.Select(c => (double)Math.Abs(c.Weight)).ToArray()
-		}
+			new RowSeries<double>
+			{
+				Name = "Важность признаков",
+				Values = sorted.Select(c => (double)Math.Abs(c.Weight)).ToArray()
+			}
 		};
 
 		chartFeatures.YAxes = new Axis[]
 		{
-		new Axis
-		{
-			Labels = sorted.Select(c => c.FeatureName).ToArray(),
-			LabelsRotation = 0,
-			TextSize = 14,
-			MinStep = 1,
-			Padding = new LiveChartsCore.Drawing.Padding(0)
-		}
+			new Axis
+			{
+				Labels = sorted.Select(c => c.FeatureName).ToArray(),
+				LabelsRotation = 0,
+				TextSize = 14,
+				MinStep = 1,
+				Padding = new LiveChartsCore.Drawing.Padding(0)
+			}
 		};
 
 		chartFeatures.XAxes = new Axis[]
 		{
-		new Axis
-		{
-			Name = "Сила влияния",
-			TextSize = 14
-		}
+			new Axis
+			{
+				Name = "Сила влияния",
+				TextSize = 14
+			}
 		};
 
 		chartFeatures.LegendPosition = LegendPosition.Hidden;
@@ -606,29 +620,132 @@ public partial class Form1 : Form
 		return coeff?.Weight ?? 0f;
 	}
 
-	private float GetNeighborhoodImpact(string neighborhood)
+	private void ShowInfluenceFactors(ModelInput house)
 	{
-		if (string.IsNullOrWhiteSpace(neighborhood))
-			return 0f;
+		float sqftCoef = GetCoefficientValueExact("Площадь");
+		float bedroomsCoef = GetCoefficientValueExact("Спальни");
+		float bathroomsCoef = GetCoefficientValueExact("Ванные");
+		float brickCoef = GetCoefficientValueExact("Кирпичный дом");
 
-		string featureName = $"Район {neighborhood.Trim()}";
+		float sqftImpact = house.SqFt * sqftCoef;
+		float bedroomsImpact = house.Bedrooms * bedroomsCoef;
+		float bathroomsImpact = house.Bathrooms * bathroomsCoef;
+		float brickImpact = house.IsBrick * brickCoef;
+		float neighborhoodImpact = GetNeighborhoodImpact(house);
 
-		var coeff = modelCoefficients.FirstOrDefault(c =>
-			string.Equals(c.FeatureName, featureName, StringComparison.OrdinalIgnoreCase));
-
-		// Если коэффициент не найден, значит это базовая категория one-hot encoding
-		return coeff?.Weight ?? 0f;
+		lblImpactSqFt.Text = FormatMoney(sqftImpact);
+		lblImpactBedrooms.Text = FormatMoney(bedroomsImpact);
+		lblImpactBathrooms.Text = FormatMoney(bathroomsImpact);
+		lblImpactBrick.Text = FormatMoney(brickImpact);
+		lblImpactNeighborhood.Text = $"{GetNeighborhoodDisplayName(house)}: {FormatMoney(neighborhoodImpact)}";
 	}
 
-	private float GetBrickImpact(string brick)
+	private float GetNeighborhoodImpact(ModelInput house)
 	{
-		string featureName = string.Equals(brick, "Yes", StringComparison.OrdinalIgnoreCase)
-			? "Кирпичный дом = Yes"
-			: "Кирпичный дом = No";
+		float impact = 0f;
 
-		var coeff = modelCoefficients.FirstOrDefault(c =>
-			string.Equals(c.FeatureName, featureName, StringComparison.OrdinalIgnoreCase));
+		if (house.IsNorth > 0.5f)
+			impact += GetCoefficientValueExact("Район North");
 
-		return coeff?.Weight ?? 0f;
+		if (house.IsWest > 0.5f)
+			impact += GetCoefficientValueExact("Район West");
+
+		return impact;
+	}
+
+	private string GetNeighborhoodDisplayName(ModelInput house)
+	{
+		if (house.IsNorth > 0.5f) return "North";
+		if (house.IsWest > 0.5f) return "West";
+		return "East";
+	}
+
+	private string FormatMoney(float value)
+	{
+		string sign = value >= 0 ? "+" : "-";
+		return $"{sign}{Math.Abs(value):N0} €";
+	}
+
+	private ModelInput ConvertToModelInput(HouseData row)
+	{
+		string neighborhood = row.Neighborhood?.Trim() ?? "";
+
+		return new ModelInput
+		{
+			Price = 0f,
+			SqFt = row.SqFt,
+			Bedrooms = row.Bedrooms,
+			Bathrooms = row.Bathrooms,
+			IsBrick = string.Equals(row.Brick, "Yes", StringComparison.OrdinalIgnoreCase) ? 1f : 0f,
+			IsNorth = string.Equals(neighborhood, "North", StringComparison.OrdinalIgnoreCase) ? 1f : 0f,
+			IsWest = string.Equals(neighborhood, "West", StringComparison.OrdinalIgnoreCase) ? 1f : 0f
+		};
+	}
+
+	private void LoadValidationTable()
+	{
+		if (trainedModel == null || mlContext == null || loadedData == null || loadedData.Count == 0)
+			return;
+
+		var prepared = loadedData
+			.Select((row, index) => new ValidationInput
+			{
+				Index = index + 1,
+				RealPrice = row.Price,
+
+				SqFt = row.SqFt,
+				Bedrooms = row.Bedrooms,
+				Bathrooms = row.Bathrooms,
+				IsBrick = string.Equals(row.Brick, "Yes", StringComparison.OrdinalIgnoreCase) ? 1f : 0f,
+				IsNorth = string.Equals(row.Neighborhood, "North", StringComparison.OrdinalIgnoreCase) ? 1f : 0f,
+				IsWest = string.Equals(row.Neighborhood, "West", StringComparison.OrdinalIgnoreCase) ? 1f : 0f,
+
+				Brick = row.Brick,
+				Neighborhood = row.Neighborhood
+			})
+			.ToList();
+
+		var dataView = mlContext.Data.LoadFromEnumerable(prepared);
+		var transformed = trainedModel.Transform(dataView);
+
+		var predictions = mlContext.Data
+			.CreateEnumerable<ValidationPrediction>(transformed, reuseRowObject: false)
+			.ToList();
+
+		var results = predictions
+			.Select(x => new ValidationRow
+			{
+				Index = x.Index,
+				RealPrice = x.RealPrice,
+				PredictedPrice = x.Score,
+				Error = x.RealPrice - x.Score,
+				AbsoluteError = Math.Abs(x.RealPrice - x.Score),
+
+				SqFt = x.SqFt,
+				Bedrooms = x.Bedrooms,
+				Bathrooms = x.Bathrooms,
+				Brick = x.Brick,
+				Neighborhood = x.Neighborhood
+			})
+			.ToList();
+
+		dataGridViewValidation.AutoGenerateColumns = true;
+		dataGridViewValidation.DataSource = null;
+		dataGridViewValidation.DataSource = results;
+
+		dataGridViewValidation.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+		dataGridViewValidation.ReadOnly = true;
+		dataGridViewValidation.AllowUserToAddRows = false;
+		dataGridViewValidation.AllowUserToDeleteRows = false;
+		dataGridViewValidation.AllowUserToResizeRows = false;
+		dataGridViewValidation.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+		float mae = results.Average(x => x.AbsoluteError);
+		float mse = results.Average(x => x.Error * x.Error);
+		float maxError = results.Max(x => x.AbsoluteError);
+
+		lblValidationMAE.Text = $"MAE = {mae:N0}";
+		lblValidationMSE.Text = $"MSE = {mse:N0}";
+		lblValidationMaxError.Text = $"Max Error = {maxError:N0}";
 	}
 }

@@ -6,7 +6,7 @@ namespace RealEstateDecisionSupportSystemApp
 {
 	public class ModelCoefficientInfo
 	{
-		public string FeatureName { get; set; }
+		public string FeatureName { get; set; } = "";
 		public float Weight { get; set; }
 	}
 }

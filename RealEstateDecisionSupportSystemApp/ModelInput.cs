@@ -4,13 +4,14 @@ using System.Text;
 
 namespace RealEstateDecisionSupportSystemApp
 {
-	public class HouseData
+	public class ModelInput
 	{
 		public float Price { get; set; }
 		public float SqFt { get; set; }
 		public float Bedrooms { get; set; }
 		public float Bathrooms { get; set; }
-		public string Brick { get; set; } = "";
-		public string Neighborhood { get; set; } = "";
+		public float IsBrick { get; set; }
+		public float IsNorth { get; set; }
+		public float IsWest { get; set; }
 	}
 }
