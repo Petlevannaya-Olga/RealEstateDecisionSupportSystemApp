@@ -150,7 +150,7 @@ public partial class Form1 : Form
 
 			var pipeline =
 				mlContext.Transforms.Concatenate(
-					"Features",
+					"FeaturesRaw",
 					nameof(ModelInput.SqFt),
 					nameof(ModelInput.Bedrooms),
 					nameof(ModelInput.Bathrooms),
@@ -158,11 +158,15 @@ public partial class Form1 : Form
 					nameof(ModelInput.IsNorth),
 					nameof(ModelInput.IsWest))
 				.Append(
+					mlContext.Transforms.NormalizeMinMax(
+						outputColumnName: "Features",
+						inputColumnName: "FeaturesRaw"))
+				.Append(
 					mlContext.Regression.Trainers.Ols(
 						labelColumnName: nameof(ModelInput.Price),
 						featureColumnName: "Features"));
 
-			// 1) Честная оценка на test
+			// 1) Оценка качества на test
 			var evalModel = pipeline.Fit(split.TrainSet);
 
 			var testPredictions = evalModel.Transform(split.TestSet);
@@ -171,7 +175,7 @@ public partial class Form1 : Form
 				labelColumnName: nameof(ModelInput.Price),
 				scoreColumnName: "Score");
 
-			// 2) Рабочая модель для UI — обучаем на всех данных
+			// 2) Рабочая модель для интерфейса — обучаем на всех данных
 			trainedModel = pipeline.Fit(fullDataView);
 
 			predictionEngine =
@@ -182,21 +186,23 @@ public partial class Form1 : Form
 			modelBias = coeffs.Bias;
 			modelCoefficients = coeffs.Coefficients;
 
-			lblR2.Text = $"R² = {metrics.RSquared:F3}";
-			lblMAE.Text = $"MAE = {metrics.MeanAbsoluteError:F0} €";
-			lblMSE.Text = $"MSE = {metrics.MeanSquaredError:F0} €²";
+			lblR2.Text = $"R² = {metrics.RSquared:F3} ({metrics.RSquared * 100:F1}%)";
+			lblMAE.Text = $"MAE = {metrics.MeanAbsoluteError:F0}";
+			lblMSE.Text = $"MSE = {metrics.MeanSquaredError:F0}";
 			lblFormula.Text = BuildFormulaText(coeffs.Bias, coeffs.Coefficients);
-			label29.Text = "Объектов в обучении : " + loadedData.Count;
 
 			FillCoefficientsTable(coeffs.Coefficients);
 			BuildFeatureImportanceChart(coeffs.Coefficients);
-
 			LoadValidationTable();
 
-			lblModelState.Text = "Модель обучена";
+			lblModelState.Text = "Модель обучена (с нормализацией)";
 			lblModelState.ForeColor = Color.DarkGreen;
 
-			MessageBox.Show("Линейная регрессия OLS успешно обучена.");
+			MessageBox.Show(
+				"Линейная регрессия OLS успешно обучена.\nПризнаки были нормализованы перед обучением.",
+				"Готово",
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Information);
 		}
 		catch (Exception ex)
 		{
@@ -509,29 +515,25 @@ public partial class Form1 : Form
 
 	private string BuildFormulaText(float bias, List<ModelCoefficientInfo> coefficients)
 	{
-		var map = coefficients.ToDictionary(x => x.FeatureName, x => x.Weight);
-
-		float sqft = map.GetValueOrDefault("Площадь");
-		float bedrooms = map.GetValueOrDefault("Спальни");
-		float bathrooms = map.GetValueOrDefault("Ванные");
-		float brick = map.GetValueOrDefault("Кирпичный дом");
-		float north = map.GetValueOrDefault("Район North");
-		float west = map.GetValueOrDefault("Район West");
-
 		var sb = new StringBuilder();
-		sb.AppendLine($"Price = {bias:F3}");
-		sb.AppendLine($"{FormatSignedFormula(sqft)} * SqFt");
-		sb.AppendLine($"{FormatSignedFormula(bedrooms)} * Bedrooms");
-		sb.AppendLine($"{FormatSignedFormula(bathrooms)} * Bathrooms");
-		sb.AppendLine($"{FormatSignedFormula(brick)} * IsBrick");
-		sb.AppendLine($"{FormatSignedFormula(north)} * IsNorth");
-		sb.AppendLine($"{FormatSignedFormula(west)} * IsWest");
+
+		sb.AppendLine("Модель обучена на нормализованных признаках.");
+		sb.AppendLine("Коэффициенты показывают относительную силу влияния признаков.");
 		sb.AppendLine();
-		sb.AppendLine("Где:");
-		sb.AppendLine("IsBrick = 1 для кирпичного дома, иначе 0");
-		sb.AppendLine("IsNorth = 1 для района North, иначе 0");
-		sb.AppendLine("IsWest = 1 для района West, иначе 0");
-		sb.AppendLine("East — базовая категория, её вклад равен 0");
+		sb.AppendLine($"Bias = {bias:F3}");
+		sb.AppendLine();
+
+		foreach (var coeff in coefficients.OrderByDescending(x => Math.Abs(x.Weight)))
+		{
+			string sign = coeff.Weight >= 0 ? "+" : "-";
+			sb.AppendLine($"{coeff.FeatureName}: {sign}{Math.Abs(coeff.Weight):F3}");
+		}
+
+		sb.AppendLine();
+		sb.AppendLine("Важно:");
+		sb.AppendLine("После нормализации коэффициенты нельзя трактовать как прямую прибавку");
+		sb.AppendLine("к цене в исходных единицах (например, за 1 SqFt).");
+		sb.AppendLine("Их нужно использовать для сравнения силы признаков между собой.");
 
 		return sb.ToString();
 	}
@@ -588,9 +590,9 @@ public partial class Form1 : Form
 	{
 		float abs = Math.Abs(weight);
 
-		if (abs >= 20000) return "Очень сильное";
-		if (abs >= 5000) return "Сильное";
-		if (abs >= 1000) return "Среднее";
+		if (abs >= 1.0f) return "Очень сильное";
+		if (abs >= 0.5f) return "Сильное";
+		if (abs >= 0.1f) return "Среднее";
 		return "Слабое";
 	}
 
@@ -680,22 +682,33 @@ public partial class Form1 : Form
 
 	private void ShowInfluenceFactors(ModelInput house)
 	{
-		float sqftCoef = GetCoefficientValueExact("Площадь");
-		float bedroomsCoef = GetCoefficientValueExact("Спальни");
-		float bathroomsCoef = GetCoefficientValueExact("Ванные");
-		float brickCoef = GetCoefficientValueExact("Кирпичный дом");
+		var sorted = modelCoefficients
+			.OrderByDescending(x => Math.Abs(x.Weight))
+			.ToList();
 
-		float sqftImpact = house.SqFt * sqftCoef;
-		float bedroomsImpact = house.Bedrooms * bedroomsCoef;
-		float bathroomsImpact = house.Bathrooms * bathroomsCoef;
-		float brickImpact = house.IsBrick * brickCoef;
-		float neighborhoodImpact = GetNeighborhoodImpact(house);
+		lblImpactSqFt.Text = GetCoefficientText("Площадь");
+		lblImpactBedrooms.Text = GetCoefficientText("Спальни");
+		lblImpactBathrooms.Text = GetCoefficientText("Ванные");
+		lblImpactBrick.Text = GetCoefficientText("Кирпичный дом");
+		lblImpactNeighborhood.Text = GetNeighborhoodCoefficientText(house);
+	}
 
-		lblImpactSqFt.Text = FormatMoney(sqftImpact);
-		lblImpactBedrooms.Text = FormatMoney(bedroomsImpact);
-		lblImpactBathrooms.Text = FormatMoney(bathroomsImpact);
-		lblImpactBrick.Text = FormatMoney(brickImpact);
-		lblImpactNeighborhood.Text = $"{GetNeighborhoodDisplayName(house)}: {FormatMoney(neighborhoodImpact)}";
+	private string GetCoefficientText(string featureName)
+	{
+		float value = GetCoefficientValueExact(featureName);
+		string sign = value >= 0 ? "+" : "-";
+		return $"{sign}{Math.Abs(value):F3}";
+	}
+
+	private string GetNeighborhoodCoefficientText(ModelInput house)
+	{
+		if (house.IsNorth > 0.5f)
+			return $"North: {GetCoefficientText("Район North")}";
+
+		if (house.IsWest > 0.5f)
+			return $"West: {GetCoefficientText("Район West")}";
+
+		return "East: 0.000";
 	}
 
 	private float GetNeighborhoodImpact(ModelInput house)
