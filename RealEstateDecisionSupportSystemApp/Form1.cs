@@ -69,6 +69,11 @@ public partial class Form1 : Form
 
 		CreateFeatureChartHost();
 		CreateActualVsPredictedChartHost();
+		CreateResidualsChartHost();
+		CreateErrorHistogramChartHost();
+		CreatePriceVsSqFtChartHost();
+		CreateErrorVsRealPriceChartHost();
+		CreateAvgPriceByNeighborhoodChartHost();
 		InitializeHistory();
 		dataGridViewValidation.EnableHeadersVisualStyles = false;
 	}
@@ -101,6 +106,8 @@ public partial class Form1 : Form
 			dataGridView1.DataSource = loadedData.OrderBy(x => x.Price).ToList();
 
 			FillNeighborhoodComboBox();
+			BuildPriceVsSqFtChart();
+			BuildAvgPriceByNeighborhoodChart();
 
 			lblStatus.Text = $"Загружено объектов: {loadedData.Count}";
 			lblModelState.Text = "Данные загружены";
@@ -803,6 +810,9 @@ public partial class Form1 : Form
 		lblValidationMinError.Text = $"Min Error = {minError:N0} €";
 
 		BuildActualVsPredictedChart(results);
+		BuildResidualsChart(results);
+		BuildErrorHistogramChart(results);
+		BuildErrorVsRealPriceChart(results);
 	}
 
 	private void InitializeHistory()
@@ -1032,5 +1042,369 @@ public partial class Form1 : Form
 		cartesianChart1.LegendPosition = LegendPosition.Top;
 		cartesianChart1.Update();
 		cartesianChart1.Refresh();
+	}
+
+	private void CreateResidualsChartHost()
+	{
+		cartesianChart2 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage7.Controls.Clear();
+		tabPage7.Controls.Add(cartesianChart2);
+		cartesianChart2.BringToFront();
+
+		tabPage7.ResumeLayout();
+		tabPage7.PerformLayout();
+	}
+
+	private void BuildResidualsChart(List<ValidationRow> results)
+	{
+		if (cartesianChart2 == null || results == null || results.Count == 0)
+			return;
+
+		var points = results
+			.Select(x => new ObservablePoint(x.PredictedPrice, x.Error))
+			.ToArray();
+
+		float minX = results.Min(x => x.PredictedPrice);
+		float maxX = results.Max(x => x.PredictedPrice);
+
+		var zeroLine = new ObservablePoint[]
+		{
+		new ObservablePoint(minX, 0),
+		new ObservablePoint(maxX, 0)
+		};
+
+		cartesianChart2.Series = new ISeries[]
+		{
+		new ScatterSeries<ObservablePoint>
+		{
+			Name = "Ошибки",
+			Values = points,
+			GeometrySize = 10
+		},
+		new LineSeries<ObservablePoint>
+		{
+			Name = "Нулевая ошибка",
+			Values = zeroLine,
+			GeometrySize = 0
+		}
+		};
+
+		cartesianChart2.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Предсказанная цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart2.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Ошибка (Real - Predicted)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart2.LegendPosition = LegendPosition.Top;
+		cartesianChart2.Update();
+		cartesianChart2.Refresh();
+	}
+
+	private void CreateErrorHistogramChartHost()
+	{
+		cartesianChart3 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage8.Controls.Clear();
+		tabPage8.Controls.Add(cartesianChart3);
+		cartesianChart3.BringToFront();
+
+		tabPage8.ResumeLayout();
+		tabPage8.PerformLayout();
+	}
+
+	private void BuildErrorHistogramChart(List<ValidationRow> results)
+	{
+		if (cartesianChart3 == null || results == null || results.Count == 0)
+			return;
+
+		var errors = results.Select(x => x.Error).ToList();
+
+		float minError = errors.Min();
+		float maxError = errors.Max();
+
+		int binsCount = 8;
+		float range = maxError - minError;
+
+		if (range < 0.001f)
+			range = 1f;
+
+		float binSize = range / binsCount;
+
+		var counts = new int[binsCount];
+		var labels = new string[binsCount];
+
+		foreach (var error in errors)
+		{
+			int binIndex = (int)((error - minError) / binSize);
+
+			if (binIndex >= binsCount)
+				binIndex = binsCount - 1;
+
+			if (binIndex < 0)
+				binIndex = 0;
+
+			counts[binIndex]++;
+		}
+
+		for (int i = 0; i < binsCount; i++)
+		{
+			float start = minError + i * binSize;
+			float end = start + binSize;
+			labels[i] = $"{start:N0} .. {end:N0}";
+		}
+
+		cartesianChart3.Series = new ISeries[]
+		{
+		new ColumnSeries<int>
+		{
+			Name = "Количество объектов",
+			Values = counts
+		}
+		};
+
+		cartesianChart3.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Диапазоны ошибок",
+			Labels = labels,
+			LabelsRotation = 15,
+			TextSize = 12
+		}
+		};
+
+		cartesianChart3.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Количество",
+			MinStep = 1
+		}
+		};
+
+		cartesianChart3.LegendPosition = LegendPosition.Top;
+		cartesianChart3.Update();
+		cartesianChart3.Refresh();
+	}
+
+	private void CreatePriceVsSqFtChartHost()
+	{
+		cartesianChart4 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage9.Controls.Clear();
+		tabPage9.Controls.Add(cartesianChart4);
+		cartesianChart4.BringToFront();
+
+		tabPage9.ResumeLayout();
+		tabPage9.PerformLayout();
+	}
+
+	private void BuildPriceVsSqFtChart()
+	{
+		if (cartesianChart4 == null || loadedData == null || loadedData.Count == 0)
+			return;
+
+		var points = loadedData
+			.Select(x => new ObservablePoint(x.SqFt, x.Price))
+			.ToArray();
+
+		cartesianChart4.Series = new ISeries[]
+		{
+		new ScatterSeries<ObservablePoint>
+		{
+			Name = "Дома",
+			Values = points,
+			GeometrySize = 10
+		}
+		};
+
+		cartesianChart4.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Площадь (SqFt)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart4.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart4.LegendPosition = LegendPosition.Top;
+		cartesianChart4.Update();
+		cartesianChart4.Refresh();
+	}
+
+	private void CreateErrorVsRealPriceChartHost()
+	{
+		cartesianChart5 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage10.Controls.Clear();
+		tabPage10.Controls.Add(cartesianChart5);
+		cartesianChart5.BringToFront();
+
+		tabPage10.ResumeLayout();
+		tabPage10.PerformLayout();
+	}
+
+	private void BuildErrorVsRealPriceChart(List<ValidationRow> results)
+	{
+		if (cartesianChart5 == null || results == null || results.Count == 0)
+			return;
+
+		var points = results
+			.Select(x => new ObservablePoint(x.RealPrice, x.Error))
+			.ToArray();
+
+		float minX = results.Min(x => x.RealPrice);
+		float maxX = results.Max(x => x.RealPrice);
+
+		var zeroLine = new ObservablePoint[]
+		{
+		new ObservablePoint(minX, 0),
+		new ObservablePoint(maxX, 0)
+		};
+
+		cartesianChart5.Series = new ISeries[]
+		{
+		new ScatterSeries<ObservablePoint>
+		{
+			Name = "Ошибки",
+			Values = points,
+			GeometrySize = 10
+		},
+		new LineSeries<ObservablePoint>
+		{
+			Name = "Нулевая ошибка",
+			Values = zeroLine,
+			GeometrySize = 0
+		}
+		};
+
+		cartesianChart5.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Реальная цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart5.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Ошибка (Real - Predicted)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart5.LegendPosition = LegendPosition.Top;
+		cartesianChart5.Update();
+		cartesianChart5.Refresh();
+	}
+
+	private void CreateAvgPriceByNeighborhoodChartHost()
+	{
+		cartesianChart6 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage11.Controls.Clear();
+		tabPage11.Controls.Add(cartesianChart6);
+		cartesianChart6.BringToFront();
+
+		tabPage11.ResumeLayout();
+		tabPage11.PerformLayout();
+	}
+
+	private void BuildAvgPriceByNeighborhoodChart()
+	{
+		if (cartesianChart6 == null || loadedData == null || loadedData.Count == 0)
+			return;
+
+		var grouped = loadedData
+			.Where(x => !string.IsNullOrWhiteSpace(x.Neighborhood))
+			.GroupBy(x => x.Neighborhood.Trim())
+			.Select(g => new
+			{
+				Neighborhood = g.Key,
+				AvgPrice = g.Average(x => x.Price)
+			})
+			.OrderBy(x => x.Neighborhood)
+			.ToList();
+
+		if (grouped.Count == 0)
+			return;
+
+		cartesianChart6.Series = new ISeries[]
+		{
+		new ColumnSeries<double>
+		{
+			Name = "Средняя цена",
+			Values = grouped.Select(x => (double)x.AvgPrice).ToArray()
+		}
+		};
+
+		cartesianChart6.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Район",
+			Labels = grouped.Select(x => x.Neighborhood).ToArray(),
+			LabelsRotation = 0,
+			TextSize = 14
+		}
+		};
+
+		cartesianChart6.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Средняя цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart6.LegendPosition = LegendPosition.Top;
+		cartesianChart6.Update();
+		cartesianChart6.Refresh();
 	}
 }
