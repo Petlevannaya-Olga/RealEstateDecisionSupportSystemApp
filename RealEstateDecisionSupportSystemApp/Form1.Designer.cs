@@ -66,9 +66,15 @@
 			label29 = new Label();
 			tabPage2 = new TabPage();
 			tabPage3 = new TabPage();
-			dataGridView2 = new DataGridView();
+			dataGridViewHistory = new DataGridView();
 			tabPage5 = new TabPage();
+			tableLayoutPanel5 = new TableLayoutPanel();
 			dataGridViewValidation = new DataGridView();
+			panel9 = new Panel();
+			lblValidationMinError = new Label();
+			lblValidationMaxError = new Label();
+			lblValidationMSE = new Label();
+			lblValidationMAE = new Label();
 			tableLayoutPanel3 = new TableLayoutPanel();
 			panel3 = new Panel();
 			btnDecision = new Button();
@@ -86,7 +92,6 @@
 			lblImpactBathrooms = new Label();
 			lblImpactBedrooms = new Label();
 			lblImpactSqFt = new Label();
-			label19 = new Label();
 			label18 = new Label();
 			label17 = new Label();
 			label16 = new Label();
@@ -97,11 +102,6 @@
 			lblModelState = new Label();
 			ofd = new OpenFileDialog();
 			lblStatus = new Label();
-			tableLayoutPanel5 = new TableLayoutPanel();
-			lblValidationMAE = new Label();
-			panel9 = new Panel();
-			lblValidationMSE = new Label();
-			lblValidationMaxError = new Label();
 			tableLayoutPanel1.SuspendLayout();
 			panel1.SuspendLayout();
 			panel2.SuspendLayout();
@@ -119,16 +119,16 @@
 			panel8.SuspendLayout();
 			panel7.SuspendLayout();
 			tabPage3.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
+			((System.ComponentModel.ISupportInitialize)dataGridViewHistory).BeginInit();
 			tabPage5.SuspendLayout();
+			tableLayoutPanel5.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)dataGridViewValidation).BeginInit();
+			panel9.SuspendLayout();
 			tableLayoutPanel3.SuspendLayout();
 			panel3.SuspendLayout();
 			panel4.SuspendLayout();
 			panel5.SuspendLayout();
 			panel6.SuspendLayout();
-			tableLayoutPanel5.SuspendLayout();
-			panel9.SuspendLayout();
 			SuspendLayout();
 			// 
 			// btnLearn
@@ -236,6 +236,7 @@
 			btnReset.TabIndex = 6;
 			btnReset.Text = "Очистить";
 			btnReset.UseVisualStyleBackColor = true;
+			btnReset.Click += BtnReset_Click;
 			// 
 			// nudActualPrice
 			// 
@@ -523,9 +524,9 @@
 			label29.AutoSize = true;
 			label29.Location = new Point(371, 101);
 			label29.Name = "label29";
-			label29.Size = new Size(191, 20);
+			label29.Size = new Size(167, 20);
 			label29.TabIndex = 4;
-			label29.Text = "Объектов в обучении: 128";
+			label29.Text = "Объектов в обучении: ";
 			// 
 			// tabPage2
 			// 
@@ -539,7 +540,7 @@
 			// 
 			// tabPage3
 			// 
-			tabPage3.Controls.Add(dataGridView2);
+			tabPage3.Controls.Add(dataGridViewHistory);
 			tabPage3.Location = new Point(4, 29);
 			tabPage3.Name = "tabPage3";
 			tabPage3.Size = new Size(659, 416);
@@ -547,18 +548,18 @@
 			tabPage3.Text = "История";
 			tabPage3.UseVisualStyleBackColor = true;
 			// 
-			// dataGridView2
+			// dataGridViewHistory
 			// 
-			dataGridView2.AllowUserToAddRows = false;
-			dataGridView2.AllowUserToDeleteRows = false;
-			dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-			dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			dataGridView2.Dock = DockStyle.Fill;
-			dataGridView2.Location = new Point(0, 0);
-			dataGridView2.Name = "dataGridView2";
-			dataGridView2.RowHeadersWidth = 51;
-			dataGridView2.Size = new Size(659, 416);
-			dataGridView2.TabIndex = 0;
+			dataGridViewHistory.AllowUserToAddRows = false;
+			dataGridViewHistory.AllowUserToDeleteRows = false;
+			dataGridViewHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+			dataGridViewHistory.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			dataGridViewHistory.Dock = DockStyle.Fill;
+			dataGridViewHistory.Location = new Point(0, 0);
+			dataGridViewHistory.Name = "dataGridViewHistory";
+			dataGridViewHistory.RowHeadersWidth = 51;
+			dataGridViewHistory.Size = new Size(659, 416);
+			dataGridViewHistory.TabIndex = 0;
 			// 
 			// tabPage5
 			// 
@@ -569,6 +570,21 @@
 			tabPage5.TabIndex = 4;
 			tabPage5.Text = "Проверка модели";
 			tabPage5.UseVisualStyleBackColor = true;
+			// 
+			// tableLayoutPanel5
+			// 
+			tableLayoutPanel5.ColumnCount = 1;
+			tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+			tableLayoutPanel5.Controls.Add(dataGridViewValidation, 0, 1);
+			tableLayoutPanel5.Controls.Add(panel9, 0, 0);
+			tableLayoutPanel5.Dock = DockStyle.Fill;
+			tableLayoutPanel5.Location = new Point(0, 0);
+			tableLayoutPanel5.Name = "tableLayoutPanel5";
+			tableLayoutPanel5.RowCount = 2;
+			tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
+			tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+			tableLayoutPanel5.Size = new Size(659, 416);
+			tableLayoutPanel5.TabIndex = 0;
 			// 
 			// dataGridViewValidation
 			// 
@@ -583,6 +599,55 @@
 			dataGridViewValidation.RowHeadersWidth = 51;
 			dataGridViewValidation.Size = new Size(653, 310);
 			dataGridViewValidation.TabIndex = 0;
+			dataGridViewValidation.DataBindingComplete += DataGridViewValidation_DataBindingComplete;
+			// 
+			// panel9
+			// 
+			panel9.Controls.Add(lblValidationMinError);
+			panel9.Controls.Add(lblValidationMaxError);
+			panel9.Controls.Add(lblValidationMSE);
+			panel9.Controls.Add(lblValidationMAE);
+			panel9.Dock = DockStyle.Fill;
+			panel9.Location = new Point(3, 3);
+			panel9.Name = "panel9";
+			panel9.Size = new Size(653, 94);
+			panel9.TabIndex = 1;
+			// 
+			// lblValidationMinError
+			// 
+			lblValidationMinError.AutoSize = true;
+			lblValidationMinError.Location = new Point(9, 67);
+			lblValidationMinError.Name = "lblValidationMinError";
+			lblValidationMinError.Size = new Size(153, 20);
+			lblValidationMinError.TabIndex = 2;
+			lblValidationMinError.Text = "lblValidationMaxError";
+			// 
+			// lblValidationMaxError
+			// 
+			lblValidationMaxError.AutoSize = true;
+			lblValidationMaxError.Location = new Point(9, 47);
+			lblValidationMaxError.Name = "lblValidationMaxError";
+			lblValidationMaxError.Size = new Size(153, 20);
+			lblValidationMaxError.TabIndex = 2;
+			lblValidationMaxError.Text = "lblValidationMaxError";
+			// 
+			// lblValidationMSE
+			// 
+			lblValidationMSE.AutoSize = true;
+			lblValidationMSE.Location = new Point(9, 27);
+			lblValidationMSE.Name = "lblValidationMSE";
+			lblValidationMSE.Size = new Size(58, 20);
+			lblValidationMSE.TabIndex = 2;
+			lblValidationMSE.Text = "label12";
+			// 
+			// lblValidationMAE
+			// 
+			lblValidationMAE.AutoSize = true;
+			lblValidationMAE.Location = new Point(9, 7);
+			lblValidationMAE.Name = "lblValidationMAE";
+			lblValidationMAE.Size = new Size(58, 20);
+			lblValidationMAE.TabIndex = 1;
+			lblValidationMAE.Text = "label12";
 			// 
 			// tableLayoutPanel3
 			// 
@@ -716,7 +781,6 @@
 			panel5.Controls.Add(lblImpactBathrooms);
 			panel5.Controls.Add(lblImpactBedrooms);
 			panel5.Controls.Add(lblImpactSqFt);
-			panel5.Controls.Add(label19);
 			panel5.Controls.Add(label18);
 			panel5.Controls.Add(label17);
 			panel5.Controls.Add(label16);
@@ -783,15 +847,6 @@
 			lblImpactSqFt.Size = new Size(73, 20);
 			lblImpactSqFt.TabIndex = 12;
 			lblImpactSqFt.Text = "+7 000 $";
-			// 
-			// label19
-			// 
-			label19.AutoSize = true;
-			label19.Location = new Point(83, 206);
-			label19.Name = "label19";
-			label19.Size = new Size(44, 20);
-			label19.TabIndex = 11;
-			label19.Text = "West:";
 			// 
 			// label18
 			// 
@@ -884,59 +939,6 @@
 			lblStatus.TabIndex = 4;
 			lblStatus.Text = "lblStatus";
 			// 
-			// tableLayoutPanel5
-			// 
-			tableLayoutPanel5.ColumnCount = 1;
-			tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-			tableLayoutPanel5.Controls.Add(dataGridViewValidation, 0, 1);
-			tableLayoutPanel5.Controls.Add(panel9, 0, 0);
-			tableLayoutPanel5.Dock = DockStyle.Fill;
-			tableLayoutPanel5.Location = new Point(0, 0);
-			tableLayoutPanel5.Name = "tableLayoutPanel5";
-			tableLayoutPanel5.RowCount = 2;
-			tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
-			tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-			tableLayoutPanel5.Size = new Size(659, 416);
-			tableLayoutPanel5.TabIndex = 0;
-			// 
-			// lblValidationMAE
-			// 
-			lblValidationMAE.AutoSize = true;
-			lblValidationMAE.Location = new Point(9, 14);
-			lblValidationMAE.Name = "lblValidationMAE";
-			lblValidationMAE.Size = new Size(58, 20);
-			lblValidationMAE.TabIndex = 1;
-			lblValidationMAE.Text = "label12";
-			// 
-			// panel9
-			// 
-			panel9.Controls.Add(lblValidationMaxError);
-			panel9.Controls.Add(lblValidationMSE);
-			panel9.Controls.Add(lblValidationMAE);
-			panel9.Dock = DockStyle.Fill;
-			panel9.Location = new Point(3, 3);
-			panel9.Name = "panel9";
-			panel9.Size = new Size(653, 94);
-			panel9.TabIndex = 1;
-			// 
-			// lblValidationMSE
-			// 
-			lblValidationMSE.AutoSize = true;
-			lblValidationMSE.Location = new Point(9, 34);
-			lblValidationMSE.Name = "lblValidationMSE";
-			lblValidationMSE.Size = new Size(58, 20);
-			lblValidationMSE.TabIndex = 2;
-			lblValidationMSE.Text = "label12";
-			// 
-			// lblValidationMaxError
-			// 
-			lblValidationMaxError.AutoSize = true;
-			lblValidationMaxError.Location = new Point(9, 54);
-			lblValidationMaxError.Name = "lblValidationMaxError";
-			lblValidationMaxError.Size = new Size(153, 20);
-			lblValidationMaxError.TabIndex = 2;
-			lblValidationMaxError.Text = "lblValidationMaxError";
-			// 
 			// Form1
 			// 
 			AutoScaleDimensions = new SizeF(8F, 20F);
@@ -970,9 +972,12 @@
 			panel7.ResumeLayout(false);
 			panel7.PerformLayout();
 			tabPage3.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
+			((System.ComponentModel.ISupportInitialize)dataGridViewHistory).EndInit();
 			tabPage5.ResumeLayout(false);
+			tableLayoutPanel5.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)dataGridViewValidation).EndInit();
+			panel9.ResumeLayout(false);
+			panel9.PerformLayout();
 			tableLayoutPanel3.ResumeLayout(false);
 			panel3.ResumeLayout(false);
 			panel3.PerformLayout();
@@ -982,9 +987,6 @@
 			panel5.PerformLayout();
 			panel6.ResumeLayout(false);
 			panel6.PerformLayout();
-			tableLayoutPanel5.ResumeLayout(false);
-			panel9.ResumeLayout(false);
-			panel9.PerformLayout();
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -1033,7 +1035,6 @@
 		private Label lblImpactBathrooms;
 		private Label lblImpactBedrooms;
 		private Label lblImpactSqFt;
-		private Label label19;
 		private Label label18;
 		private Label label17;
 		private Label label16;
@@ -1051,7 +1052,7 @@
 		private DataGridView dataGridView1;
 		private OpenFileDialog ofd;
 		private Label lblStatus;
-		private DataGridView dataGridView2;
+		private DataGridView dataGridViewHistory;
 		private DataGridView dataGridViewCoeffs;
 		private TableLayoutPanel tableLayoutPanel4;
 		private Panel panel8;
@@ -1064,5 +1065,6 @@
 		private Label lblValidationMaxError;
 		private Label lblValidationMSE;
 		private Label lblValidationMAE;
+		private Label lblValidationMinError;
 	}
 }
