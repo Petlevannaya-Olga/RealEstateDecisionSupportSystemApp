@@ -187,8 +187,9 @@ public partial class Form1 : Form
 			modelCoefficients = coeffs.Coefficients;
 
 			lblR2.Text = $"R² = {metrics.RSquared:F3} ({metrics.RSquared * 100:F1}%)";
-			lblMAE.Text = $"MAE = {metrics.MeanAbsoluteError:F0}";
-			lblMSE.Text = $"MSE = {metrics.MeanSquaredError:F0}";
+			lblMAE.Text = $"MAE = {metrics.MeanAbsoluteError:F0} €";
+			lblMSE.Text = $"MSE = {metrics.MeanSquaredError:F0} €²";
+			label29.Text = "Объектов в обучении: " + loadedData.Count;
 			lblFormula.Text = BuildFormulaText(coeffs.Bias, coeffs.Coefficients);
 
 			FillCoefficientsTable(coeffs.Coefficients);
@@ -518,7 +519,8 @@ public partial class Form1 : Form
 		var sb = new StringBuilder();
 
 		sb.AppendLine("Модель обучена на нормализованных признаках.");
-		sb.AppendLine("Коэффициенты показывают относительную силу влияния признаков.");
+		sb.AppendLine("Коэффициенты показывают относительную ");
+		sb.AppendLine("силу влияния признаков.");
 		sb.AppendLine();
 		sb.AppendLine($"Bias = {bias:F3}");
 		sb.AppendLine();

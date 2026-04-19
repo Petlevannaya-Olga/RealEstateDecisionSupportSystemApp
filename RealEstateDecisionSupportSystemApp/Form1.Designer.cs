@@ -80,15 +80,15 @@
 			tableLayoutPanel4 = new TableLayoutPanel();
 			dataGridViewCoeffs = new DataGridView();
 			panel8 = new Panel();
-			lblMSE = new Label();
-			lblMAE = new Label();
-			lblR2 = new Label();
 			label32 = new Label();
-			lblFormula = new Label();
 			panel7 = new Panel();
 			label31 = new Label();
 			label30 = new Label();
 			label29 = new Label();
+			lblMSE = new Label();
+			lblMAE = new Label();
+			lblR2 = new Label();
+			lblFormula = new Label();
 			tabPage2 = new TabPage();
 			tabPage6 = new TabPage();
 			cartesianChart1 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
@@ -100,6 +100,8 @@
 			cartesianChart4 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
 			tabPage10 = new TabPage();
 			cartesianChart5 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
+			tabPage11 = new TabPage();
+			cartesianChart6 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
 			tabPage3 = new TabPage();
 			dataGridViewHistory = new DataGridView();
 			tabPage5 = new TabPage();
@@ -137,8 +139,6 @@
 			lblModelState = new Label();
 			ofd = new OpenFileDialog();
 			lblStatus = new Label();
-			tabPage11 = new TabPage();
-			cartesianChart6 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
 			tableLayoutPanel1.SuspendLayout();
 			panel1.SuspendLayout();
 			panel2.SuspendLayout();
@@ -160,6 +160,7 @@
 			tabPage8.SuspendLayout();
 			tabPage9.SuspendLayout();
 			tabPage10.SuspendLayout();
+			tabPage11.SuspendLayout();
 			tabPage3.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)dataGridViewHistory).BeginInit();
 			tabPage5.SuspendLayout();
@@ -171,7 +172,6 @@
 			panel4.SuspendLayout();
 			panel5.SuspendLayout();
 			panel6.SuspendLayout();
-			tabPage11.SuspendLayout();
 			SuspendLayout();
 			// 
 			// btnLearn
@@ -463,7 +463,7 @@
 			tableLayoutPanel4.Location = new Point(3, 3);
 			tableLayoutPanel4.Name = "tableLayoutPanel4";
 			tableLayoutPanel4.RowCount = 2;
-			tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Absolute, 250F));
+			tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 			tableLayoutPanel4.RowStyles.Add(new RowStyle());
 			tableLayoutPanel4.Size = new Size(653, 410);
 			tableLayoutPanel4.TabIndex = 7;
@@ -472,7 +472,7 @@
 			// 
 			dataGridViewCoeffs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			dataGridViewCoeffs.Dock = DockStyle.Fill;
-			dataGridViewCoeffs.Location = new Point(3, 253);
+			dataGridViewCoeffs.Location = new Point(3, 203);
 			dataGridViewCoeffs.Name = "dataGridViewCoeffs";
 			dataGridViewCoeffs.RowHeadersWidth = 51;
 			dataGridViewCoeffs.Size = new Size(647, 204);
@@ -481,45 +481,18 @@
 			// 
 			// panel8
 			// 
+			panel8.Controls.Add(label32);
+			panel8.Controls.Add(panel7);
+			panel8.Controls.Add(label29);
 			panel8.Controls.Add(lblMSE);
 			panel8.Controls.Add(lblMAE);
 			panel8.Controls.Add(lblR2);
-			panel8.Controls.Add(label32);
 			panel8.Controls.Add(lblFormula);
-			panel8.Controls.Add(panel7);
-			panel8.Controls.Add(label29);
 			panel8.Dock = DockStyle.Fill;
 			panel8.Location = new Point(3, 3);
 			panel8.Name = "panel8";
-			panel8.Size = new Size(647, 244);
+			panel8.Size = new Size(647, 194);
 			panel8.TabIndex = 0;
-			// 
-			// lblMSE
-			// 
-			lblMSE.AutoSize = true;
-			lblMSE.Location = new Point(201, 51);
-			lblMSE.Name = "lblMSE";
-			lblMSE.Size = new Size(55, 20);
-			lblMSE.TabIndex = 3;
-			lblMSE.Text = "lblMSE";
-			// 
-			// lblMAE
-			// 
-			lblMAE.AutoSize = true;
-			lblMAE.Location = new Point(201, 29);
-			lblMAE.Name = "lblMAE";
-			lblMAE.Size = new Size(57, 20);
-			lblMAE.TabIndex = 2;
-			lblMAE.Text = "lblMAE";
-			// 
-			// lblR2
-			// 
-			lblR2.AutoSize = true;
-			lblR2.Location = new Point(201, 7);
-			lblR2.Name = "lblR2";
-			lblR2.Size = new Size(43, 20);
-			lblR2.TabIndex = 1;
-			lblR2.Text = "lblR2";
 			// 
 			// label32
 			// 
@@ -530,15 +503,6 @@
 			label32.Size = new Size(204, 20);
 			label32.TabIndex = 6;
 			label32.Text = "Теория принятия решений";
-			// 
-			// lblFormula
-			// 
-			lblFormula.AutoSize = true;
-			lblFormula.Location = new Point(7, 7);
-			lblFormula.Name = "lblFormula";
-			lblFormula.Size = new Size(72, 20);
-			lblFormula.TabIndex = 0;
-			lblFormula.Text = "Формула";
 			// 
 			// panel7
 			// 
@@ -576,6 +540,42 @@
 			label29.Size = new Size(167, 20);
 			label29.TabIndex = 4;
 			label29.Text = "Объектов в обучении: ";
+			// 
+			// lblMSE
+			// 
+			lblMSE.AutoSize = true;
+			lblMSE.Location = new Point(377, 189);
+			lblMSE.Name = "lblMSE";
+			lblMSE.Size = new Size(55, 20);
+			lblMSE.TabIndex = 3;
+			lblMSE.Text = "lblMSE";
+			// 
+			// lblMAE
+			// 
+			lblMAE.AutoSize = true;
+			lblMAE.Location = new Point(377, 167);
+			lblMAE.Name = "lblMAE";
+			lblMAE.Size = new Size(57, 20);
+			lblMAE.TabIndex = 2;
+			lblMAE.Text = "lblMAE";
+			// 
+			// lblR2
+			// 
+			lblR2.AutoSize = true;
+			lblR2.Location = new Point(377, 145);
+			lblR2.Name = "lblR2";
+			lblR2.Size = new Size(43, 20);
+			lblR2.TabIndex = 1;
+			lblR2.Text = "lblR2";
+			// 
+			// lblFormula
+			// 
+			lblFormula.AutoSize = true;
+			lblFormula.Location = new Point(7, 7);
+			lblFormula.Name = "lblFormula";
+			lblFormula.Size = new Size(72, 20);
+			lblFormula.TabIndex = 0;
+			lblFormula.Text = "Формула";
 			// 
 			// tabPage2
 			// 
@@ -846,6 +846,58 @@
 			cartesianChart5.Tooltip = skDefaultTooltip5;
 			cartesianChart5.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
 			cartesianChart5.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
+			// 
+			// tabPage11
+			// 
+			tabPage11.Controls.Add(cartesianChart6);
+			tabPage11.Location = new Point(4, 29);
+			tabPage11.Name = "tabPage11";
+			tabPage11.Size = new Size(659, 416);
+			tabPage11.TabIndex = 10;
+			tabPage11.Text = "Средняя цена по районам";
+			tabPage11.UseVisualStyleBackColor = true;
+			// 
+			// cartesianChart6
+			// 
+			cartesianChart6.AutoUpdateEnabled = true;
+			cartesianChart6.ChartTheme = null;
+			cartesianChart6.Dock = DockStyle.Fill;
+			skDefaultLegend6.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend6.Content = null;
+			skDefaultLegend6.IsValid = false;
+			skDefaultLegend6.Opacity = 1F;
+			padding11.Bottom = 0F;
+			padding11.Left = 0F;
+			padding11.Right = 0F;
+			padding11.Top = 0F;
+			skDefaultLegend6.Padding = padding11;
+			skDefaultLegend6.RemoveOnCompleted = false;
+			skDefaultLegend6.RotateTransform = 0F;
+			skDefaultLegend6.X = 0F;
+			skDefaultLegend6.Y = 0F;
+			cartesianChart6.Legend = skDefaultLegend6;
+			cartesianChart6.Location = new Point(0, 0);
+			cartesianChart6.MatchAxesScreenDataRatio = false;
+			cartesianChart6.Name = "cartesianChart6";
+			cartesianChart6.Size = new Size(659, 416);
+			cartesianChart6.TabIndex = 0;
+			skDefaultTooltip6.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip6.Content = null;
+			skDefaultTooltip6.IsValid = false;
+			skDefaultTooltip6.Opacity = 1F;
+			padding12.Bottom = 0F;
+			padding12.Left = 0F;
+			padding12.Right = 0F;
+			padding12.Top = 0F;
+			skDefaultTooltip6.Padding = padding12;
+			skDefaultTooltip6.RemoveOnCompleted = false;
+			skDefaultTooltip6.RotateTransform = 0F;
+			skDefaultTooltip6.Wedge = 10;
+			skDefaultTooltip6.X = 0F;
+			skDefaultTooltip6.Y = 0F;
+			cartesianChart6.Tooltip = skDefaultTooltip6;
+			cartesianChart6.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
+			cartesianChart6.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
 			// 
 			// tabPage3
 			// 
@@ -1229,7 +1281,7 @@
 			lblModelState.AutoSize = true;
 			lblModelState.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
 			lblModelState.ForeColor = Color.DarkGreen;
-			lblModelState.Location = new Point(536, 16);
+			lblModelState.Location = new Point(392, 16);
 			lblModelState.Name = "lblModelState";
 			lblModelState.Size = new Size(130, 20);
 			lblModelState.TabIndex = 3;
@@ -1247,58 +1299,6 @@
 			lblStatus.Size = new Size(66, 20);
 			lblStatus.TabIndex = 4;
 			lblStatus.Text = "lblStatus";
-			// 
-			// tabPage11
-			// 
-			tabPage11.Controls.Add(cartesianChart6);
-			tabPage11.Location = new Point(4, 29);
-			tabPage11.Name = "tabPage11";
-			tabPage11.Size = new Size(659, 416);
-			tabPage11.TabIndex = 10;
-			tabPage11.Text = "Средняя цена по районам";
-			tabPage11.UseVisualStyleBackColor = true;
-			// 
-			// cartesianChart6
-			// 
-			cartesianChart6.AutoUpdateEnabled = true;
-			cartesianChart6.ChartTheme = null;
-			cartesianChart6.Dock = DockStyle.Fill;
-			skDefaultLegend6.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
-			skDefaultLegend6.Content = null;
-			skDefaultLegend6.IsValid = true;
-			skDefaultLegend6.Opacity = 1F;
-			padding11.Bottom = 0F;
-			padding11.Left = 0F;
-			padding11.Right = 0F;
-			padding11.Top = 0F;
-			skDefaultLegend6.Padding = padding11;
-			skDefaultLegend6.RemoveOnCompleted = false;
-			skDefaultLegend6.RotateTransform = 0F;
-			skDefaultLegend6.X = 0F;
-			skDefaultLegend6.Y = 0F;
-			cartesianChart6.Legend = skDefaultLegend6;
-			cartesianChart6.Location = new Point(0, 0);
-			cartesianChart6.MatchAxesScreenDataRatio = false;
-			cartesianChart6.Name = "cartesianChart6";
-			cartesianChart6.Size = new Size(659, 416);
-			cartesianChart6.TabIndex = 0;
-			skDefaultTooltip6.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
-			skDefaultTooltip6.Content = null;
-			skDefaultTooltip6.IsValid = true;
-			skDefaultTooltip6.Opacity = 1F;
-			padding12.Bottom = 0F;
-			padding12.Left = 0F;
-			padding12.Right = 0F;
-			padding12.Top = 0F;
-			skDefaultTooltip6.Padding = padding12;
-			skDefaultTooltip6.RemoveOnCompleted = false;
-			skDefaultTooltip6.RotateTransform = 0F;
-			skDefaultTooltip6.Wedge = 10;
-			skDefaultTooltip6.X = 0F;
-			skDefaultTooltip6.Y = 0F;
-			cartesianChart6.Tooltip = skDefaultTooltip6;
-			cartesianChart6.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
-			cartesianChart6.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
 			// 
 			// Form1
 			// 
@@ -1337,6 +1337,7 @@
 			tabPage8.ResumeLayout(false);
 			tabPage9.ResumeLayout(false);
 			tabPage10.ResumeLayout(false);
+			tabPage11.ResumeLayout(false);
 			tabPage3.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)dataGridViewHistory).EndInit();
 			tabPage5.ResumeLayout(false);
@@ -1353,7 +1354,6 @@
 			panel5.PerformLayout();
 			panel6.ResumeLayout(false);
 			panel6.PerformLayout();
-			tabPage11.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
