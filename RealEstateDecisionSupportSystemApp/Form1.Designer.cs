@@ -28,6 +28,31 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend1 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+			LiveChartsCore.Drawing.Padding padding1 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip1 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
+			LiveChartsCore.Drawing.Padding padding2 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend2 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
+			LiveChartsCore.Drawing.Padding padding3 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip2 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
+			LiveChartsCore.Drawing.Padding padding4 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend3 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
+			LiveChartsCore.Drawing.Padding padding5 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip3 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
+			LiveChartsCore.Drawing.Padding padding6 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend4 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
+			LiveChartsCore.Drawing.Padding padding7 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip4 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
+			LiveChartsCore.Drawing.Padding padding8 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend5 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
+			LiveChartsCore.Drawing.Padding padding9 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip5 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
+			LiveChartsCore.Drawing.Padding padding10 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend6 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
+			LiveChartsCore.Drawing.Padding padding11 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip6 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
+			LiveChartsCore.Drawing.Padding padding12 = new LiveChartsCore.Drawing.Padding();
 			btnLearn = new Button();
 			btnLoad = new Button();
 			tableLayoutPanel1 = new TableLayoutPanel();
@@ -65,10 +90,26 @@
 			label30 = new Label();
 			label29 = new Label();
 			tabPage2 = new TabPage();
+			tabPage6 = new TabPage();
+			cartesianChart1 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
+			tabPage7 = new TabPage();
+			cartesianChart2 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
+			tabPage8 = new TabPage();
+			cartesianChart3 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
+			tabPage9 = new TabPage();
+			cartesianChart4 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
+			tabPage10 = new TabPage();
+			cartesianChart5 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
 			tabPage3 = new TabPage();
-			dataGridView2 = new DataGridView();
+			dataGridViewHistory = new DataGridView();
 			tabPage5 = new TabPage();
+			tableLayoutPanel5 = new TableLayoutPanel();
 			dataGridViewValidation = new DataGridView();
+			panel9 = new Panel();
+			lblValidationMinError = new Label();
+			lblValidationMaxError = new Label();
+			lblValidationMSE = new Label();
+			lblValidationMAE = new Label();
 			tableLayoutPanel3 = new TableLayoutPanel();
 			panel3 = new Panel();
 			btnDecision = new Button();
@@ -86,7 +127,6 @@
 			lblImpactBathrooms = new Label();
 			lblImpactBedrooms = new Label();
 			lblImpactSqFt = new Label();
-			label19 = new Label();
 			label18 = new Label();
 			label17 = new Label();
 			label16 = new Label();
@@ -97,11 +137,8 @@
 			lblModelState = new Label();
 			ofd = new OpenFileDialog();
 			lblStatus = new Label();
-			tableLayoutPanel5 = new TableLayoutPanel();
-			lblValidationMAE = new Label();
-			panel9 = new Panel();
-			lblValidationMSE = new Label();
-			lblValidationMaxError = new Label();
+			tabPage11 = new TabPage();
+			cartesianChart6 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
 			tableLayoutPanel1.SuspendLayout();
 			panel1.SuspendLayout();
 			panel2.SuspendLayout();
@@ -118,17 +155,23 @@
 			((System.ComponentModel.ISupportInitialize)dataGridViewCoeffs).BeginInit();
 			panel8.SuspendLayout();
 			panel7.SuspendLayout();
+			tabPage6.SuspendLayout();
+			tabPage7.SuspendLayout();
+			tabPage8.SuspendLayout();
+			tabPage9.SuspendLayout();
+			tabPage10.SuspendLayout();
 			tabPage3.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
+			((System.ComponentModel.ISupportInitialize)dataGridViewHistory).BeginInit();
 			tabPage5.SuspendLayout();
+			tableLayoutPanel5.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)dataGridViewValidation).BeginInit();
+			panel9.SuspendLayout();
 			tableLayoutPanel3.SuspendLayout();
 			panel3.SuspendLayout();
 			panel4.SuspendLayout();
 			panel5.SuspendLayout();
 			panel6.SuspendLayout();
-			tableLayoutPanel5.SuspendLayout();
-			panel9.SuspendLayout();
+			tabPage11.SuspendLayout();
 			SuspendLayout();
 			// 
 			// btnLearn
@@ -236,6 +279,7 @@
 			btnReset.TabIndex = 6;
 			btnReset.Text = "Очистить";
 			btnReset.UseVisualStyleBackColor = true;
+			btnReset.Click += BtnReset_Click;
 			// 
 			// nudActualPrice
 			// 
@@ -359,6 +403,12 @@
 			tabControl1.Controls.Add(tabPage4);
 			tabControl1.Controls.Add(tabPage1);
 			tabControl1.Controls.Add(tabPage2);
+			tabControl1.Controls.Add(tabPage6);
+			tabControl1.Controls.Add(tabPage7);
+			tabControl1.Controls.Add(tabPage8);
+			tabControl1.Controls.Add(tabPage9);
+			tabControl1.Controls.Add(tabPage10);
+			tabControl1.Controls.Add(tabPage11);
 			tabControl1.Controls.Add(tabPage3);
 			tabControl1.Controls.Add(tabPage5);
 			tabControl1.Dock = DockStyle.Fill;
@@ -523,9 +573,9 @@
 			label29.AutoSize = true;
 			label29.Location = new Point(371, 101);
 			label29.Name = "label29";
-			label29.Size = new Size(191, 20);
+			label29.Size = new Size(167, 20);
 			label29.TabIndex = 4;
-			label29.Text = "Объектов в обучении: 128";
+			label29.Text = "Объектов в обучении: ";
 			// 
 			// tabPage2
 			// 
@@ -537,9 +587,269 @@
 			tabPage2.Text = "График влияния признаков";
 			tabPage2.UseVisualStyleBackColor = true;
 			// 
+			// tabPage6
+			// 
+			tabPage6.Controls.Add(cartesianChart1);
+			tabPage6.Location = new Point(4, 29);
+			tabPage6.Name = "tabPage6";
+			tabPage6.Size = new Size(659, 416);
+			tabPage6.TabIndex = 5;
+			tabPage6.Text = "Реальная цена vs Предсказанная";
+			tabPage6.UseVisualStyleBackColor = true;
+			// 
+			// cartesianChart1
+			// 
+			cartesianChart1.AutoUpdateEnabled = true;
+			cartesianChart1.ChartTheme = null;
+			cartesianChart1.Dock = DockStyle.Fill;
+			skDefaultLegend1.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend1.Content = null;
+			skDefaultLegend1.IsValid = false;
+			skDefaultLegend1.Opacity = 1F;
+			padding1.Bottom = 0F;
+			padding1.Left = 0F;
+			padding1.Right = 0F;
+			padding1.Top = 0F;
+			skDefaultLegend1.Padding = padding1;
+			skDefaultLegend1.RemoveOnCompleted = false;
+			skDefaultLegend1.RotateTransform = 0F;
+			skDefaultLegend1.X = 0F;
+			skDefaultLegend1.Y = 0F;
+			cartesianChart1.Legend = skDefaultLegend1;
+			cartesianChart1.Location = new Point(0, 0);
+			cartesianChart1.MatchAxesScreenDataRatio = false;
+			cartesianChart1.Name = "cartesianChart1";
+			cartesianChart1.Size = new Size(659, 416);
+			cartesianChart1.TabIndex = 0;
+			skDefaultTooltip1.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip1.Content = null;
+			skDefaultTooltip1.IsValid = false;
+			skDefaultTooltip1.Opacity = 1F;
+			padding2.Bottom = 0F;
+			padding2.Left = 0F;
+			padding2.Right = 0F;
+			padding2.Top = 0F;
+			skDefaultTooltip1.Padding = padding2;
+			skDefaultTooltip1.RemoveOnCompleted = false;
+			skDefaultTooltip1.RotateTransform = 0F;
+			skDefaultTooltip1.Wedge = 10;
+			skDefaultTooltip1.X = 0F;
+			skDefaultTooltip1.Y = 0F;
+			cartesianChart1.Tooltip = skDefaultTooltip1;
+			cartesianChart1.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
+			cartesianChart1.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
+			// 
+			// tabPage7
+			// 
+			tabPage7.Controls.Add(cartesianChart2);
+			tabPage7.Location = new Point(4, 29);
+			tabPage7.Name = "tabPage7";
+			tabPage7.Size = new Size(659, 416);
+			tabPage7.TabIndex = 6;
+			tabPage7.Text = "График ошибок";
+			tabPage7.UseVisualStyleBackColor = true;
+			// 
+			// cartesianChart2
+			// 
+			cartesianChart2.AutoUpdateEnabled = true;
+			cartesianChart2.ChartTheme = null;
+			cartesianChart2.Dock = DockStyle.Fill;
+			skDefaultLegend2.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend2.Content = null;
+			skDefaultLegend2.IsValid = false;
+			skDefaultLegend2.Opacity = 1F;
+			padding3.Bottom = 0F;
+			padding3.Left = 0F;
+			padding3.Right = 0F;
+			padding3.Top = 0F;
+			skDefaultLegend2.Padding = padding3;
+			skDefaultLegend2.RemoveOnCompleted = false;
+			skDefaultLegend2.RotateTransform = 0F;
+			skDefaultLegend2.X = 0F;
+			skDefaultLegend2.Y = 0F;
+			cartesianChart2.Legend = skDefaultLegend2;
+			cartesianChart2.Location = new Point(0, 0);
+			cartesianChart2.MatchAxesScreenDataRatio = false;
+			cartesianChart2.Name = "cartesianChart2";
+			cartesianChart2.Size = new Size(659, 416);
+			cartesianChart2.TabIndex = 0;
+			skDefaultTooltip2.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip2.Content = null;
+			skDefaultTooltip2.IsValid = false;
+			skDefaultTooltip2.Opacity = 1F;
+			padding4.Bottom = 0F;
+			padding4.Left = 0F;
+			padding4.Right = 0F;
+			padding4.Top = 0F;
+			skDefaultTooltip2.Padding = padding4;
+			skDefaultTooltip2.RemoveOnCompleted = false;
+			skDefaultTooltip2.RotateTransform = 0F;
+			skDefaultTooltip2.Wedge = 10;
+			skDefaultTooltip2.X = 0F;
+			skDefaultTooltip2.Y = 0F;
+			cartesianChart2.Tooltip = skDefaultTooltip2;
+			cartesianChart2.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
+			cartesianChart2.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
+			// 
+			// tabPage8
+			// 
+			tabPage8.Controls.Add(cartesianChart3);
+			tabPage8.Location = new Point(4, 29);
+			tabPage8.Name = "tabPage8";
+			tabPage8.Size = new Size(659, 416);
+			tabPage8.TabIndex = 7;
+			tabPage8.Text = "Гистограмма ошибок";
+			tabPage8.UseVisualStyleBackColor = true;
+			// 
+			// cartesianChart3
+			// 
+			cartesianChart3.AutoUpdateEnabled = true;
+			cartesianChart3.ChartTheme = null;
+			cartesianChart3.Dock = DockStyle.Fill;
+			skDefaultLegend3.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend3.Content = null;
+			skDefaultLegend3.IsValid = false;
+			skDefaultLegend3.Opacity = 1F;
+			padding5.Bottom = 0F;
+			padding5.Left = 0F;
+			padding5.Right = 0F;
+			padding5.Top = 0F;
+			skDefaultLegend3.Padding = padding5;
+			skDefaultLegend3.RemoveOnCompleted = false;
+			skDefaultLegend3.RotateTransform = 0F;
+			skDefaultLegend3.X = 0F;
+			skDefaultLegend3.Y = 0F;
+			cartesianChart3.Legend = skDefaultLegend3;
+			cartesianChart3.Location = new Point(0, 0);
+			cartesianChart3.MatchAxesScreenDataRatio = false;
+			cartesianChart3.Name = "cartesianChart3";
+			cartesianChart3.Size = new Size(659, 416);
+			cartesianChart3.TabIndex = 0;
+			skDefaultTooltip3.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip3.Content = null;
+			skDefaultTooltip3.IsValid = false;
+			skDefaultTooltip3.Opacity = 1F;
+			padding6.Bottom = 0F;
+			padding6.Left = 0F;
+			padding6.Right = 0F;
+			padding6.Top = 0F;
+			skDefaultTooltip3.Padding = padding6;
+			skDefaultTooltip3.RemoveOnCompleted = false;
+			skDefaultTooltip3.RotateTransform = 0F;
+			skDefaultTooltip3.Wedge = 10;
+			skDefaultTooltip3.X = 0F;
+			skDefaultTooltip3.Y = 0F;
+			cartesianChart3.Tooltip = skDefaultTooltip3;
+			cartesianChart3.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
+			cartesianChart3.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
+			// 
+			// tabPage9
+			// 
+			tabPage9.Controls.Add(cartesianChart4);
+			tabPage9.Location = new Point(4, 29);
+			tabPage9.Name = "tabPage9";
+			tabPage9.Size = new Size(659, 416);
+			tabPage9.TabIndex = 8;
+			tabPage9.Text = "Цена vs площадь";
+			tabPage9.UseVisualStyleBackColor = true;
+			// 
+			// cartesianChart4
+			// 
+			cartesianChart4.AutoUpdateEnabled = true;
+			cartesianChart4.ChartTheme = null;
+			cartesianChart4.Dock = DockStyle.Fill;
+			skDefaultLegend4.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend4.Content = null;
+			skDefaultLegend4.IsValid = false;
+			skDefaultLegend4.Opacity = 1F;
+			padding7.Bottom = 0F;
+			padding7.Left = 0F;
+			padding7.Right = 0F;
+			padding7.Top = 0F;
+			skDefaultLegend4.Padding = padding7;
+			skDefaultLegend4.RemoveOnCompleted = false;
+			skDefaultLegend4.RotateTransform = 0F;
+			skDefaultLegend4.X = 0F;
+			skDefaultLegend4.Y = 0F;
+			cartesianChart4.Legend = skDefaultLegend4;
+			cartesianChart4.Location = new Point(0, 0);
+			cartesianChart4.MatchAxesScreenDataRatio = false;
+			cartesianChart4.Name = "cartesianChart4";
+			cartesianChart4.Size = new Size(659, 416);
+			cartesianChart4.TabIndex = 0;
+			skDefaultTooltip4.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip4.Content = null;
+			skDefaultTooltip4.IsValid = false;
+			skDefaultTooltip4.Opacity = 1F;
+			padding8.Bottom = 0F;
+			padding8.Left = 0F;
+			padding8.Right = 0F;
+			padding8.Top = 0F;
+			skDefaultTooltip4.Padding = padding8;
+			skDefaultTooltip4.RemoveOnCompleted = false;
+			skDefaultTooltip4.RotateTransform = 0F;
+			skDefaultTooltip4.Wedge = 10;
+			skDefaultTooltip4.X = 0F;
+			skDefaultTooltip4.Y = 0F;
+			cartesianChart4.Tooltip = skDefaultTooltip4;
+			cartesianChart4.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
+			cartesianChart4.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
+			// 
+			// tabPage10
+			// 
+			tabPage10.Controls.Add(cartesianChart5);
+			tabPage10.Location = new Point(4, 29);
+			tabPage10.Name = "tabPage10";
+			tabPage10.Size = new Size(659, 416);
+			tabPage10.TabIndex = 9;
+			tabPage10.Text = "Ошибка vs реальная цена";
+			tabPage10.UseVisualStyleBackColor = true;
+			// 
+			// cartesianChart5
+			// 
+			cartesianChart5.AutoUpdateEnabled = true;
+			cartesianChart5.ChartTheme = null;
+			cartesianChart5.Dock = DockStyle.Fill;
+			skDefaultLegend5.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend5.Content = null;
+			skDefaultLegend5.IsValid = false;
+			skDefaultLegend5.Opacity = 1F;
+			padding9.Bottom = 0F;
+			padding9.Left = 0F;
+			padding9.Right = 0F;
+			padding9.Top = 0F;
+			skDefaultLegend5.Padding = padding9;
+			skDefaultLegend5.RemoveOnCompleted = false;
+			skDefaultLegend5.RotateTransform = 0F;
+			skDefaultLegend5.X = 0F;
+			skDefaultLegend5.Y = 0F;
+			cartesianChart5.Legend = skDefaultLegend5;
+			cartesianChart5.Location = new Point(0, 0);
+			cartesianChart5.MatchAxesScreenDataRatio = false;
+			cartesianChart5.Name = "cartesianChart5";
+			cartesianChart5.Size = new Size(659, 416);
+			cartesianChart5.TabIndex = 0;
+			skDefaultTooltip5.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip5.Content = null;
+			skDefaultTooltip5.IsValid = false;
+			skDefaultTooltip5.Opacity = 1F;
+			padding10.Bottom = 0F;
+			padding10.Left = 0F;
+			padding10.Right = 0F;
+			padding10.Top = 0F;
+			skDefaultTooltip5.Padding = padding10;
+			skDefaultTooltip5.RemoveOnCompleted = false;
+			skDefaultTooltip5.RotateTransform = 0F;
+			skDefaultTooltip5.Wedge = 10;
+			skDefaultTooltip5.X = 0F;
+			skDefaultTooltip5.Y = 0F;
+			cartesianChart5.Tooltip = skDefaultTooltip5;
+			cartesianChart5.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
+			cartesianChart5.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
+			// 
 			// tabPage3
 			// 
-			tabPage3.Controls.Add(dataGridView2);
+			tabPage3.Controls.Add(dataGridViewHistory);
 			tabPage3.Location = new Point(4, 29);
 			tabPage3.Name = "tabPage3";
 			tabPage3.Size = new Size(659, 416);
@@ -547,18 +857,18 @@
 			tabPage3.Text = "История";
 			tabPage3.UseVisualStyleBackColor = true;
 			// 
-			// dataGridView2
+			// dataGridViewHistory
 			// 
-			dataGridView2.AllowUserToAddRows = false;
-			dataGridView2.AllowUserToDeleteRows = false;
-			dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-			dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			dataGridView2.Dock = DockStyle.Fill;
-			dataGridView2.Location = new Point(0, 0);
-			dataGridView2.Name = "dataGridView2";
-			dataGridView2.RowHeadersWidth = 51;
-			dataGridView2.Size = new Size(659, 416);
-			dataGridView2.TabIndex = 0;
+			dataGridViewHistory.AllowUserToAddRows = false;
+			dataGridViewHistory.AllowUserToDeleteRows = false;
+			dataGridViewHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+			dataGridViewHistory.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			dataGridViewHistory.Dock = DockStyle.Fill;
+			dataGridViewHistory.Location = new Point(0, 0);
+			dataGridViewHistory.Name = "dataGridViewHistory";
+			dataGridViewHistory.RowHeadersWidth = 51;
+			dataGridViewHistory.Size = new Size(659, 416);
+			dataGridViewHistory.TabIndex = 0;
 			// 
 			// tabPage5
 			// 
@@ -569,6 +879,21 @@
 			tabPage5.TabIndex = 4;
 			tabPage5.Text = "Проверка модели";
 			tabPage5.UseVisualStyleBackColor = true;
+			// 
+			// tableLayoutPanel5
+			// 
+			tableLayoutPanel5.ColumnCount = 1;
+			tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+			tableLayoutPanel5.Controls.Add(dataGridViewValidation, 0, 1);
+			tableLayoutPanel5.Controls.Add(panel9, 0, 0);
+			tableLayoutPanel5.Dock = DockStyle.Fill;
+			tableLayoutPanel5.Location = new Point(0, 0);
+			tableLayoutPanel5.Name = "tableLayoutPanel5";
+			tableLayoutPanel5.RowCount = 2;
+			tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
+			tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+			tableLayoutPanel5.Size = new Size(659, 416);
+			tableLayoutPanel5.TabIndex = 0;
 			// 
 			// dataGridViewValidation
 			// 
@@ -583,6 +908,55 @@
 			dataGridViewValidation.RowHeadersWidth = 51;
 			dataGridViewValidation.Size = new Size(653, 310);
 			dataGridViewValidation.TabIndex = 0;
+			dataGridViewValidation.DataBindingComplete += DataGridViewValidation_DataBindingComplete;
+			// 
+			// panel9
+			// 
+			panel9.Controls.Add(lblValidationMinError);
+			panel9.Controls.Add(lblValidationMaxError);
+			panel9.Controls.Add(lblValidationMSE);
+			panel9.Controls.Add(lblValidationMAE);
+			panel9.Dock = DockStyle.Fill;
+			panel9.Location = new Point(3, 3);
+			panel9.Name = "panel9";
+			panel9.Size = new Size(653, 94);
+			panel9.TabIndex = 1;
+			// 
+			// lblValidationMinError
+			// 
+			lblValidationMinError.AutoSize = true;
+			lblValidationMinError.Location = new Point(9, 67);
+			lblValidationMinError.Name = "lblValidationMinError";
+			lblValidationMinError.Size = new Size(153, 20);
+			lblValidationMinError.TabIndex = 2;
+			lblValidationMinError.Text = "lblValidationMaxError";
+			// 
+			// lblValidationMaxError
+			// 
+			lblValidationMaxError.AutoSize = true;
+			lblValidationMaxError.Location = new Point(9, 47);
+			lblValidationMaxError.Name = "lblValidationMaxError";
+			lblValidationMaxError.Size = new Size(153, 20);
+			lblValidationMaxError.TabIndex = 2;
+			lblValidationMaxError.Text = "lblValidationMaxError";
+			// 
+			// lblValidationMSE
+			// 
+			lblValidationMSE.AutoSize = true;
+			lblValidationMSE.Location = new Point(9, 27);
+			lblValidationMSE.Name = "lblValidationMSE";
+			lblValidationMSE.Size = new Size(58, 20);
+			lblValidationMSE.TabIndex = 2;
+			lblValidationMSE.Text = "label12";
+			// 
+			// lblValidationMAE
+			// 
+			lblValidationMAE.AutoSize = true;
+			lblValidationMAE.Location = new Point(9, 7);
+			lblValidationMAE.Name = "lblValidationMAE";
+			lblValidationMAE.Size = new Size(58, 20);
+			lblValidationMAE.TabIndex = 1;
+			lblValidationMAE.Text = "label12";
 			// 
 			// tableLayoutPanel3
 			// 
@@ -716,7 +1090,6 @@
 			panel5.Controls.Add(lblImpactBathrooms);
 			panel5.Controls.Add(lblImpactBedrooms);
 			panel5.Controls.Add(lblImpactSqFt);
-			panel5.Controls.Add(label19);
 			panel5.Controls.Add(label18);
 			panel5.Controls.Add(label17);
 			panel5.Controls.Add(label16);
@@ -783,15 +1156,6 @@
 			lblImpactSqFt.Size = new Size(73, 20);
 			lblImpactSqFt.TabIndex = 12;
 			lblImpactSqFt.Text = "+7 000 $";
-			// 
-			// label19
-			// 
-			label19.AutoSize = true;
-			label19.Location = new Point(83, 206);
-			label19.Name = "label19";
-			label19.Size = new Size(44, 20);
-			label19.TabIndex = 11;
-			label19.Text = "West:";
 			// 
 			// label18
 			// 
@@ -884,58 +1248,57 @@
 			lblStatus.TabIndex = 4;
 			lblStatus.Text = "lblStatus";
 			// 
-			// tableLayoutPanel5
+			// tabPage11
 			// 
-			tableLayoutPanel5.ColumnCount = 1;
-			tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-			tableLayoutPanel5.Controls.Add(dataGridViewValidation, 0, 1);
-			tableLayoutPanel5.Controls.Add(panel9, 0, 0);
-			tableLayoutPanel5.Dock = DockStyle.Fill;
-			tableLayoutPanel5.Location = new Point(0, 0);
-			tableLayoutPanel5.Name = "tableLayoutPanel5";
-			tableLayoutPanel5.RowCount = 2;
-			tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
-			tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-			tableLayoutPanel5.Size = new Size(659, 416);
-			tableLayoutPanel5.TabIndex = 0;
+			tabPage11.Controls.Add(cartesianChart6);
+			tabPage11.Location = new Point(4, 29);
+			tabPage11.Name = "tabPage11";
+			tabPage11.Size = new Size(659, 416);
+			tabPage11.TabIndex = 10;
+			tabPage11.Text = "Средняя цена по районам";
+			tabPage11.UseVisualStyleBackColor = true;
 			// 
-			// lblValidationMAE
+			// cartesianChart6
 			// 
-			lblValidationMAE.AutoSize = true;
-			lblValidationMAE.Location = new Point(9, 14);
-			lblValidationMAE.Name = "lblValidationMAE";
-			lblValidationMAE.Size = new Size(58, 20);
-			lblValidationMAE.TabIndex = 1;
-			lblValidationMAE.Text = "label12";
-			// 
-			// panel9
-			// 
-			panel9.Controls.Add(lblValidationMaxError);
-			panel9.Controls.Add(lblValidationMSE);
-			panel9.Controls.Add(lblValidationMAE);
-			panel9.Dock = DockStyle.Fill;
-			panel9.Location = new Point(3, 3);
-			panel9.Name = "panel9";
-			panel9.Size = new Size(653, 94);
-			panel9.TabIndex = 1;
-			// 
-			// lblValidationMSE
-			// 
-			lblValidationMSE.AutoSize = true;
-			lblValidationMSE.Location = new Point(9, 34);
-			lblValidationMSE.Name = "lblValidationMSE";
-			lblValidationMSE.Size = new Size(58, 20);
-			lblValidationMSE.TabIndex = 2;
-			lblValidationMSE.Text = "label12";
-			// 
-			// lblValidationMaxError
-			// 
-			lblValidationMaxError.AutoSize = true;
-			lblValidationMaxError.Location = new Point(9, 54);
-			lblValidationMaxError.Name = "lblValidationMaxError";
-			lblValidationMaxError.Size = new Size(153, 20);
-			lblValidationMaxError.TabIndex = 2;
-			lblValidationMaxError.Text = "lblValidationMaxError";
+			cartesianChart6.AutoUpdateEnabled = true;
+			cartesianChart6.ChartTheme = null;
+			cartesianChart6.Dock = DockStyle.Fill;
+			skDefaultLegend6.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend6.Content = null;
+			skDefaultLegend6.IsValid = true;
+			skDefaultLegend6.Opacity = 1F;
+			padding11.Bottom = 0F;
+			padding11.Left = 0F;
+			padding11.Right = 0F;
+			padding11.Top = 0F;
+			skDefaultLegend6.Padding = padding11;
+			skDefaultLegend6.RemoveOnCompleted = false;
+			skDefaultLegend6.RotateTransform = 0F;
+			skDefaultLegend6.X = 0F;
+			skDefaultLegend6.Y = 0F;
+			cartesianChart6.Legend = skDefaultLegend6;
+			cartesianChart6.Location = new Point(0, 0);
+			cartesianChart6.MatchAxesScreenDataRatio = false;
+			cartesianChart6.Name = "cartesianChart6";
+			cartesianChart6.Size = new Size(659, 416);
+			cartesianChart6.TabIndex = 0;
+			skDefaultTooltip6.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip6.Content = null;
+			skDefaultTooltip6.IsValid = true;
+			skDefaultTooltip6.Opacity = 1F;
+			padding12.Bottom = 0F;
+			padding12.Left = 0F;
+			padding12.Right = 0F;
+			padding12.Top = 0F;
+			skDefaultTooltip6.Padding = padding12;
+			skDefaultTooltip6.RemoveOnCompleted = false;
+			skDefaultTooltip6.RotateTransform = 0F;
+			skDefaultTooltip6.Wedge = 10;
+			skDefaultTooltip6.X = 0F;
+			skDefaultTooltip6.Y = 0F;
+			cartesianChart6.Tooltip = skDefaultTooltip6;
+			cartesianChart6.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
+			cartesianChart6.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
 			// 
 			// Form1
 			// 
@@ -969,10 +1332,18 @@
 			panel8.PerformLayout();
 			panel7.ResumeLayout(false);
 			panel7.PerformLayout();
+			tabPage6.ResumeLayout(false);
+			tabPage7.ResumeLayout(false);
+			tabPage8.ResumeLayout(false);
+			tabPage9.ResumeLayout(false);
+			tabPage10.ResumeLayout(false);
 			tabPage3.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
+			((System.ComponentModel.ISupportInitialize)dataGridViewHistory).EndInit();
 			tabPage5.ResumeLayout(false);
+			tableLayoutPanel5.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)dataGridViewValidation).EndInit();
+			panel9.ResumeLayout(false);
+			panel9.PerformLayout();
 			tableLayoutPanel3.ResumeLayout(false);
 			panel3.ResumeLayout(false);
 			panel3.PerformLayout();
@@ -982,9 +1353,7 @@
 			panel5.PerformLayout();
 			panel6.ResumeLayout(false);
 			panel6.PerformLayout();
-			tableLayoutPanel5.ResumeLayout(false);
-			panel9.ResumeLayout(false);
-			panel9.PerformLayout();
+			tabPage11.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -1033,7 +1402,6 @@
 		private Label lblImpactBathrooms;
 		private Label lblImpactBedrooms;
 		private Label lblImpactSqFt;
-		private Label label19;
 		private Label label18;
 		private Label label17;
 		private Label label16;
@@ -1051,7 +1419,7 @@
 		private DataGridView dataGridView1;
 		private OpenFileDialog ofd;
 		private Label lblStatus;
-		private DataGridView dataGridView2;
+		private DataGridView dataGridViewHistory;
 		private DataGridView dataGridViewCoeffs;
 		private TableLayoutPanel tableLayoutPanel4;
 		private Panel panel8;
@@ -1064,5 +1432,18 @@
 		private Label lblValidationMaxError;
 		private Label lblValidationMSE;
 		private Label lblValidationMAE;
+		private Label lblValidationMinError;
+		private TabPage tabPage6;
+		private LiveChartsCore.SkiaSharpView.WinForms.CartesianChart cartesianChart1;
+		private TabPage tabPage7;
+		private LiveChartsCore.SkiaSharpView.WinForms.CartesianChart cartesianChart2;
+		private TabPage tabPage8;
+		private LiveChartsCore.SkiaSharpView.WinForms.CartesianChart cartesianChart3;
+		private TabPage tabPage9;
+		private LiveChartsCore.SkiaSharpView.WinForms.CartesianChart cartesianChart4;
+		private TabPage tabPage10;
+		private LiveChartsCore.SkiaSharpView.WinForms.CartesianChart cartesianChart5;
+		private TabPage tabPage11;
+		private LiveChartsCore.SkiaSharpView.WinForms.CartesianChart cartesianChart6;
 	}
 }

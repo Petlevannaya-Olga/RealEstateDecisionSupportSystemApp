@@ -1,4 +1,5 @@
 using LiveChartsCore;
+using LiveChartsCore.Defaults;
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.WinForms;
@@ -8,6 +9,7 @@ using Microsoft.ML.Trainers;
 using OfficeOpenXml;
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 
 namespace RealEstateDecisionSupportSystemApp;
 
@@ -24,6 +26,12 @@ public partial class Form1 : Form
 
 	private float modelBias;
 	private List<ModelCoefficientInfo> modelCoefficients = new();
+
+	private List<PredictionHistoryItem> predictionHistory = new();
+	private string historyFilePath = Path.Combine(
+	Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+	"RealEstateDecisionSupportSystemApp",
+	"prediction_history.json");
 
 	public Form1()
 	{
@@ -52,7 +60,22 @@ public partial class Form1 : Form
 		btnDecision.Text = "Нет решения";
 		btnDecision.BackColor = SystemColors.ControlDark;
 
+		label13.Text = "-";
+		lblImpactSqFt.Text = "-";
+		lblImpactBedrooms.Text = "-";
+		lblImpactBathrooms.Text = "-";
+		lblImpactBrick.Text = "-";
+		lblImpactNeighborhood.Text = "-";
+
 		CreateFeatureChartHost();
+		CreateActualVsPredictedChartHost();
+		CreateResidualsChartHost();
+		CreateErrorHistogramChartHost();
+		CreatePriceVsSqFtChartHost();
+		CreateErrorVsRealPriceChartHost();
+		CreateAvgPriceByNeighborhoodChartHost();
+		InitializeHistory();
+		dataGridViewValidation.EnableHeadersVisualStyles = false;
 	}
 
 	private void BtnLoad_Click(object sender, EventArgs e)
@@ -80,9 +103,11 @@ public partial class Form1 : Form
 
 			dataGridView1.AutoGenerateColumns = true;
 			dataGridView1.DataSource = null;
-			dataGridView1.DataSource = loadedData;
+			dataGridView1.DataSource = loadedData.OrderBy(x => x.Price).ToList();
 
 			FillNeighborhoodComboBox();
+			BuildPriceVsSqFtChart();
+			BuildAvgPriceByNeighborhoodChart();
 
 			lblStatus.Text = $"Загружено объектов: {loadedData.Count}";
 			lblModelState.Text = "Данные загружены";
@@ -158,12 +183,14 @@ public partial class Form1 : Form
 			modelCoefficients = coeffs.Coefficients;
 
 			lblR2.Text = $"R² = {metrics.RSquared:F3}";
-			lblMAE.Text = $"MAE = {metrics.MeanAbsoluteError:F0}";
-			lblMSE.Text = $"MSE = {metrics.MeanSquaredError:F0}";
+			lblMAE.Text = $"MAE = {metrics.MeanAbsoluteError:F0} €";
+			lblMSE.Text = $"MSE = {metrics.MeanSquaredError:F0} €²";
 			lblFormula.Text = BuildFormulaText(coeffs.Bias, coeffs.Coefficients);
+			label29.Text = "Объектов в обучении : " + loadedData.Count;
 
 			FillCoefficientsTable(coeffs.Coefficients);
 			BuildFeatureImportanceChart(coeffs.Coefficients);
+
 			LoadValidationTable();
 
 			lblModelState.Text = "Модель обучена";
@@ -194,41 +221,55 @@ public partial class Form1 : Form
 			}
 
 			var modelInput = BuildModelInputFromUi();
-
 			var result = predictionEngine.Predict(modelInput);
 
 			lblPredictedPrice.Text = $"{result.PredictedPrice:N0} €";
+			label13.Text = $"{nudActualPrice.Value:N0} €";
 
 			ShowInfluenceFactors(modelInput);
 
 			float actualPrice = (float)nudActualPrice.Value;
+			float diff = 0f;
+			string decisionText;
+
 			if (actualPrice > 0)
 			{
-				float diff = result.PredictedPrice - actualPrice;
+				diff = result.PredictedPrice - actualPrice;
 				lblDifference.Text = $"{diff:N0} €";
 
 				if (diff > 10000)
 				{
-					btnDecision.Text = "Покупать";
+					decisionText = "Покупать";
+					btnDecision.Text = decisionText;
 					btnDecision.BackColor = Color.DarkGreen;
 				}
 				else if (diff < -10000)
 				{
-					btnDecision.Text = "Не покупать";
+					decisionText = "Не покупать";
+					btnDecision.Text = decisionText;
 					btnDecision.BackColor = Color.DarkRed;
 				}
 				else
 				{
-					btnDecision.Text = "Доп. анализ";
+					decisionText = "Доп. анализ";
+					btnDecision.Text = decisionText;
 					btnDecision.BackColor = Color.DarkOrange;
 				}
 			}
 			else
 			{
 				lblDifference.Text = "-";
-				btnDecision.Text = "Нет цены";
+				decisionText = "Нет цены";
+				btnDecision.Text = decisionText;
 				btnDecision.BackColor = SystemColors.ControlDark;
 			}
+
+			AddHistoryRecord(
+				modelInput,
+				result.PredictedPrice,
+				actualPrice,
+				diff,
+				decisionText);
 		}
 		catch (Exception ex)
 		{
@@ -504,6 +545,7 @@ public partial class Form1 : Form
 	private void FillCoefficientsTable(List<ModelCoefficientInfo> coefficients)
 	{
 		var tableData = coefficients
+			.OrderByDescending(c => Math.Abs(c.Weight))
 			.Select(c => new
 			{
 				Признак = c.FeatureName,
@@ -594,6 +636,22 @@ public partial class Form1 : Form
 		chartFeatures.LegendPosition = LegendPosition.Hidden;
 		chartFeatures.Update();
 		chartFeatures.Refresh();
+	}
+
+	private void CreateActualVsPredictedChartHost()
+	{
+		cartesianChart1 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage6.Controls.Clear();
+		tabPage6.Controls.Add(cartesianChart1);
+		cartesianChart1.BringToFront();
+
+		tabPage6.ResumeLayout();
+		tabPage6.PerformLayout();
 	}
 
 	private void CreateFeatureChartHost()
@@ -727,6 +785,7 @@ public partial class Form1 : Form
 				Brick = x.Brick,
 				Neighborhood = x.Neighborhood
 			})
+			.OrderBy(x => x.AbsoluteError)
 			.ToList();
 
 		dataGridViewValidation.AutoGenerateColumns = true;
@@ -743,9 +802,609 @@ public partial class Form1 : Form
 		float mae = results.Average(x => x.AbsoluteError);
 		float mse = results.Average(x => x.Error * x.Error);
 		float maxError = results.Max(x => x.AbsoluteError);
+		float minError = results.Min(x => x.AbsoluteError);
 
-		lblValidationMAE.Text = $"MAE = {mae:N0}";
-		lblValidationMSE.Text = $"MSE = {mse:N0}";
-		lblValidationMaxError.Text = $"Max Error = {maxError:N0}";
+		lblValidationMAE.Text = $"MAE = {mae:N0} €";
+		lblValidationMSE.Text = $"MSE = {mse:N0} €²";
+		lblValidationMaxError.Text = $"Max Error = {maxError:N0} €";
+		lblValidationMinError.Text = $"Min Error = {minError:N0} €";
+
+		BuildActualVsPredictedChart(results);
+		BuildResidualsChart(results);
+		BuildErrorHistogramChart(results);
+		BuildErrorVsRealPriceChart(results);
+	}
+
+	private void InitializeHistory()
+	{
+		LoadHistoryFromFile();
+		BindHistoryGrid();
+	}
+
+	private void LoadHistoryFromFile()
+	{
+		try
+		{
+			if (!File.Exists(historyFilePath))
+			{
+				predictionHistory = new List<PredictionHistoryItem>();
+				return;
+			}
+
+			string json = File.ReadAllText(historyFilePath);
+			var data = JsonSerializer.Deserialize<List<PredictionHistoryItem>>(json);
+
+			predictionHistory = data ?? new List<PredictionHistoryItem>();
+		}
+		catch
+		{
+			predictionHistory = new List<PredictionHistoryItem>();
+		}
+	}
+
+	private void SaveHistoryToFile()
+	{
+		try
+		{
+			var options = new JsonSerializerOptions
+			{
+				WriteIndented = true
+			};
+
+			string? dir = Path.GetDirectoryName(historyFilePath);
+			if (!Directory.Exists(dir))
+				Directory.CreateDirectory(dir!);
+
+			string json = JsonSerializer.Serialize(predictionHistory, options);
+			File.WriteAllText(historyFilePath, json);
+		}
+		catch (Exception ex)
+		{
+			MessageBox.Show(
+				"Ошибка сохранения истории:\n" + ex.Message,
+				"Ошибка",
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Error);
+		}
+	}
+
+	private void BindHistoryGrid()
+	{
+		var tableData = predictionHistory
+			.OrderByDescending(x => x.CreatedAt)
+			.Select(x => new
+			{
+				Дата = x.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss"),
+				Площадь = x.SqFt,
+				Спальни = x.Bedrooms,
+				Ванные = x.Bathrooms,
+				Кирпич = x.Brick,
+				Район = x.Neighborhood,
+				ФактЦена = x.ActualPrice,
+				Прогноз = x.PredictedPrice,
+				Разница = x.Difference,
+				Решение = x.Decision
+			})
+			.ToList();
+
+		dataGridViewHistory.AutoGenerateColumns = true;
+		dataGridViewHistory.DataSource = null;
+		dataGridViewHistory.DataSource = tableData;
+
+		dataGridViewHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+		dataGridViewHistory.ReadOnly = true;
+		dataGridViewHistory.AllowUserToAddRows = false;
+		dataGridViewHistory.AllowUserToDeleteRows = false;
+		dataGridViewHistory.AllowUserToResizeRows = false;
+		dataGridViewHistory.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+	}
+
+	private void AddHistoryRecord(
+		ModelInput input,
+		float predictedPrice,
+		float actualPrice,
+		float difference,
+		string decision)
+	{
+		var item = new PredictionHistoryItem
+		{
+			CreatedAt = DateTime.Now,
+			SqFt = input.SqFt,
+			Bedrooms = input.Bedrooms,
+			Bathrooms = input.Bathrooms,
+			Brick = input.IsBrick > 0.5f ? "Yes" : "No",
+			Neighborhood = GetNeighborhoodDisplayName(input),
+			ActualPrice = actualPrice,
+			PredictedPrice = predictedPrice,
+			Difference = difference,
+			Decision = decision
+		};
+
+		predictionHistory.Add(item);
+		SaveHistoryToFile();
+		BindHistoryGrid();
+	}
+
+	private void BtnReset_Click(object sender, EventArgs e)
+	{
+		nudSqFt.Value = 1;
+		nudBedrooms.Value = 1;
+		nudBathrooms.Value = 1;
+		chkBrick.Checked = false;
+		cmbNeighborhood.SelectedIndex = -1;
+		nudActualPrice.Value = 1;
+	}
+
+	private void DataGridViewValidation_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+	{
+		if (dataGridViewValidation.DataSource is not List<ValidationRow> results || results.Count == 0)
+			return;
+
+		float minError = results.Min(x => x.AbsoluteError);
+		float maxError = results.Max(x => x.AbsoluteError);
+
+		foreach (DataGridViewRow row in dataGridViewValidation.Rows)
+		{
+			if (row.Index < 0 || row.Index >= results.Count)
+				continue;
+
+			float error = results[row.Index].AbsoluteError;
+			Color backColor;
+
+			if (Math.Abs(maxError - minError) < 0.001f)
+			{
+				backColor = Color.White;
+			}
+			else if (Math.Abs(error - minError) < 0.001f)
+			{
+				backColor = Color.LightGreen;
+			}
+			else if (Math.Abs(error - maxError) < 0.001f)
+			{
+				backColor = Color.LightCoral;
+			}
+			else
+			{
+				float normalized = (error - minError) / (maxError - minError);
+
+				if (normalized < 0.33f)
+					backColor = Color.Honeydew;
+				else if (normalized < 0.66f)
+					backColor = Color.LightYellow;
+				else
+					backColor = Color.MistyRose;
+			}
+
+			foreach (DataGridViewCell cell in row.Cells)
+			{
+				cell.Style.BackColor = backColor;
+				cell.Style.ForeColor = Color.Black;
+				cell.Style.SelectionBackColor = backColor;
+				cell.Style.SelectionForeColor = Color.Black;
+			}
+		}
+
+		dataGridViewValidation.ClearSelection();
+	}
+
+	private void BuildActualVsPredictedChart(List<ValidationRow> results)
+	{
+		if (cartesianChart1 == null || results == null || results.Count == 0)
+			return;
+
+		var points = results
+			.Select(x => new ObservablePoint(x.RealPrice, x.PredictedPrice))
+			.ToArray();
+
+		float minValue = results.Min(x => Math.Min(x.RealPrice, x.PredictedPrice));
+		float maxValue = results.Max(x => Math.Max(x.RealPrice, x.PredictedPrice));
+
+		var diagonal = new ObservablePoint[]
+		{
+		new ObservablePoint(minValue, minValue),
+		new ObservablePoint(maxValue, maxValue)
+		};
+
+		cartesianChart1.Series = new ISeries[]
+		{
+		new ScatterSeries<ObservablePoint>
+		{
+			Name = "Объекты",
+			Values = points,
+			GeometrySize = 10
+		},
+		new LineSeries<ObservablePoint>
+		{
+			Name = "Идеальная линия",
+			Values = diagonal,
+			GeometrySize = 0
+		}
+		};
+
+		cartesianChart1.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Реальная цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart1.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Предсказанная цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart1.LegendPosition = LegendPosition.Top;
+		cartesianChart1.Update();
+		cartesianChart1.Refresh();
+	}
+
+	private void CreateResidualsChartHost()
+	{
+		cartesianChart2 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage7.Controls.Clear();
+		tabPage7.Controls.Add(cartesianChart2);
+		cartesianChart2.BringToFront();
+
+		tabPage7.ResumeLayout();
+		tabPage7.PerformLayout();
+	}
+
+	private void BuildResidualsChart(List<ValidationRow> results)
+	{
+		if (cartesianChart2 == null || results == null || results.Count == 0)
+			return;
+
+		var points = results
+			.Select(x => new ObservablePoint(x.PredictedPrice, x.Error))
+			.ToArray();
+
+		float minX = results.Min(x => x.PredictedPrice);
+		float maxX = results.Max(x => x.PredictedPrice);
+
+		var zeroLine = new ObservablePoint[]
+		{
+		new ObservablePoint(minX, 0),
+		new ObservablePoint(maxX, 0)
+		};
+
+		cartesianChart2.Series = new ISeries[]
+		{
+		new ScatterSeries<ObservablePoint>
+		{
+			Name = "Ошибки",
+			Values = points,
+			GeometrySize = 10
+		},
+		new LineSeries<ObservablePoint>
+		{
+			Name = "Нулевая ошибка",
+			Values = zeroLine,
+			GeometrySize = 0
+		}
+		};
+
+		cartesianChart2.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Предсказанная цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart2.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Ошибка (Real - Predicted)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart2.LegendPosition = LegendPosition.Top;
+		cartesianChart2.Update();
+		cartesianChart2.Refresh();
+	}
+
+	private void CreateErrorHistogramChartHost()
+	{
+		cartesianChart3 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage8.Controls.Clear();
+		tabPage8.Controls.Add(cartesianChart3);
+		cartesianChart3.BringToFront();
+
+		tabPage8.ResumeLayout();
+		tabPage8.PerformLayout();
+	}
+
+	private void BuildErrorHistogramChart(List<ValidationRow> results)
+	{
+		if (cartesianChart3 == null || results == null || results.Count == 0)
+			return;
+
+		var errors = results.Select(x => x.Error).ToList();
+
+		float minError = errors.Min();
+		float maxError = errors.Max();
+
+		int binsCount = 8;
+		float range = maxError - minError;
+
+		if (range < 0.001f)
+			range = 1f;
+
+		float binSize = range / binsCount;
+
+		var counts = new int[binsCount];
+		var labels = new string[binsCount];
+
+		foreach (var error in errors)
+		{
+			int binIndex = (int)((error - minError) / binSize);
+
+			if (binIndex >= binsCount)
+				binIndex = binsCount - 1;
+
+			if (binIndex < 0)
+				binIndex = 0;
+
+			counts[binIndex]++;
+		}
+
+		for (int i = 0; i < binsCount; i++)
+		{
+			float start = minError + i * binSize;
+			float end = start + binSize;
+			labels[i] = $"{start:N0} .. {end:N0}";
+		}
+
+		cartesianChart3.Series = new ISeries[]
+		{
+		new ColumnSeries<int>
+		{
+			Name = "Количество объектов",
+			Values = counts
+		}
+		};
+
+		cartesianChart3.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Диапазоны ошибок",
+			Labels = labels,
+			LabelsRotation = 15,
+			TextSize = 12
+		}
+		};
+
+		cartesianChart3.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Количество",
+			MinStep = 1
+		}
+		};
+
+		cartesianChart3.LegendPosition = LegendPosition.Top;
+		cartesianChart3.Update();
+		cartesianChart3.Refresh();
+	}
+
+	private void CreatePriceVsSqFtChartHost()
+	{
+		cartesianChart4 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage9.Controls.Clear();
+		tabPage9.Controls.Add(cartesianChart4);
+		cartesianChart4.BringToFront();
+
+		tabPage9.ResumeLayout();
+		tabPage9.PerformLayout();
+	}
+
+	private void BuildPriceVsSqFtChart()
+	{
+		if (cartesianChart4 == null || loadedData == null || loadedData.Count == 0)
+			return;
+
+		var points = loadedData
+			.Select(x => new ObservablePoint(x.SqFt, x.Price))
+			.ToArray();
+
+		cartesianChart4.Series = new ISeries[]
+		{
+		new ScatterSeries<ObservablePoint>
+		{
+			Name = "Дома",
+			Values = points,
+			GeometrySize = 10
+		}
+		};
+
+		cartesianChart4.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Площадь (SqFt)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart4.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart4.LegendPosition = LegendPosition.Top;
+		cartesianChart4.Update();
+		cartesianChart4.Refresh();
+	}
+
+	private void CreateErrorVsRealPriceChartHost()
+	{
+		cartesianChart5 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage10.Controls.Clear();
+		tabPage10.Controls.Add(cartesianChart5);
+		cartesianChart5.BringToFront();
+
+		tabPage10.ResumeLayout();
+		tabPage10.PerformLayout();
+	}
+
+	private void BuildErrorVsRealPriceChart(List<ValidationRow> results)
+	{
+		if (cartesianChart5 == null || results == null || results.Count == 0)
+			return;
+
+		var points = results
+			.Select(x => new ObservablePoint(x.RealPrice, x.Error))
+			.ToArray();
+
+		float minX = results.Min(x => x.RealPrice);
+		float maxX = results.Max(x => x.RealPrice);
+
+		var zeroLine = new ObservablePoint[]
+		{
+		new ObservablePoint(minX, 0),
+		new ObservablePoint(maxX, 0)
+		};
+
+		cartesianChart5.Series = new ISeries[]
+		{
+		new ScatterSeries<ObservablePoint>
+		{
+			Name = "Ошибки",
+			Values = points,
+			GeometrySize = 10
+		},
+		new LineSeries<ObservablePoint>
+		{
+			Name = "Нулевая ошибка",
+			Values = zeroLine,
+			GeometrySize = 0
+		}
+		};
+
+		cartesianChart5.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Реальная цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart5.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Ошибка (Real - Predicted)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart5.LegendPosition = LegendPosition.Top;
+		cartesianChart5.Update();
+		cartesianChart5.Refresh();
+	}
+
+	private void CreateAvgPriceByNeighborhoodChartHost()
+	{
+		cartesianChart6 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage11.Controls.Clear();
+		tabPage11.Controls.Add(cartesianChart6);
+		cartesianChart6.BringToFront();
+
+		tabPage11.ResumeLayout();
+		tabPage11.PerformLayout();
+	}
+
+	private void BuildAvgPriceByNeighborhoodChart()
+	{
+		if (cartesianChart6 == null || loadedData == null || loadedData.Count == 0)
+			return;
+
+		var grouped = loadedData
+			.Where(x => !string.IsNullOrWhiteSpace(x.Neighborhood))
+			.GroupBy(x => x.Neighborhood.Trim())
+			.Select(g => new
+			{
+				Neighborhood = g.Key,
+				AvgPrice = g.Average(x => x.Price)
+			})
+			.OrderBy(x => x.Neighborhood)
+			.ToList();
+
+		if (grouped.Count == 0)
+			return;
+
+		cartesianChart6.Series = new ISeries[]
+		{
+		new ColumnSeries<double>
+		{
+			Name = "Средняя цена",
+			Values = grouped.Select(x => (double)x.AvgPrice).ToArray()
+		}
+		};
+
+		cartesianChart6.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Район",
+			Labels = grouped.Select(x => x.Neighborhood).ToArray(),
+			LabelsRotation = 0,
+			TextSize = 14
+		}
+		};
+
+		cartesianChart6.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Средняя цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart6.LegendPosition = LegendPosition.Top;
+		cartesianChart6.Update();
+		cartesianChart6.Refresh();
 	}
 }
