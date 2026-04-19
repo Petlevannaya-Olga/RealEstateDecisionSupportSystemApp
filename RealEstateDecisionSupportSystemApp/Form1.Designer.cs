@@ -28,6 +28,11 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend1 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+			LiveChartsCore.Drawing.Padding padding1 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip1 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
+			LiveChartsCore.Drawing.Padding padding2 = new LiveChartsCore.Drawing.Padding();
 			btnLearn = new Button();
 			btnLoad = new Button();
 			tableLayoutPanel1 = new TableLayoutPanel();
@@ -102,6 +107,8 @@
 			lblModelState = new Label();
 			ofd = new OpenFileDialog();
 			lblStatus = new Label();
+			tabPage6 = new TabPage();
+			cartesianChart1 = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
 			tableLayoutPanel1.SuspendLayout();
 			panel1.SuspendLayout();
 			panel2.SuspendLayout();
@@ -129,6 +136,7 @@
 			panel4.SuspendLayout();
 			panel5.SuspendLayout();
 			panel6.SuspendLayout();
+			tabPage6.SuspendLayout();
 			SuspendLayout();
 			// 
 			// btnLearn
@@ -360,6 +368,7 @@
 			tabControl1.Controls.Add(tabPage4);
 			tabControl1.Controls.Add(tabPage1);
 			tabControl1.Controls.Add(tabPage2);
+			tabControl1.Controls.Add(tabPage6);
 			tabControl1.Controls.Add(tabPage3);
 			tabControl1.Controls.Add(tabPage5);
 			tabControl1.Dock = DockStyle.Fill;
@@ -939,6 +948,58 @@
 			lblStatus.TabIndex = 4;
 			lblStatus.Text = "lblStatus";
 			// 
+			// tabPage6
+			// 
+			tabPage6.Controls.Add(cartesianChart1);
+			tabPage6.Location = new Point(4, 29);
+			tabPage6.Name = "tabPage6";
+			tabPage6.Size = new Size(659, 416);
+			tabPage6.TabIndex = 5;
+			tabPage6.Text = "Реальная цена vs Предсказанная";
+			tabPage6.UseVisualStyleBackColor = true;
+			// 
+			// cartesianChart1
+			// 
+			cartesianChart1.AutoUpdateEnabled = true;
+			cartesianChart1.ChartTheme = null;
+			cartesianChart1.Dock = DockStyle.Fill;
+			skDefaultLegend1.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend1.Content = null;
+			skDefaultLegend1.IsValid = true;
+			skDefaultLegend1.Opacity = 1F;
+			padding1.Bottom = 0F;
+			padding1.Left = 0F;
+			padding1.Right = 0F;
+			padding1.Top = 0F;
+			skDefaultLegend1.Padding = padding1;
+			skDefaultLegend1.RemoveOnCompleted = false;
+			skDefaultLegend1.RotateTransform = 0F;
+			skDefaultLegend1.X = 0F;
+			skDefaultLegend1.Y = 0F;
+			cartesianChart1.Legend = skDefaultLegend1;
+			cartesianChart1.Location = new Point(0, 0);
+			cartesianChart1.MatchAxesScreenDataRatio = false;
+			cartesianChart1.Name = "cartesianChart1";
+			cartesianChart1.Size = new Size(659, 416);
+			cartesianChart1.TabIndex = 0;
+			skDefaultTooltip1.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip1.Content = null;
+			skDefaultTooltip1.IsValid = true;
+			skDefaultTooltip1.Opacity = 1F;
+			padding2.Bottom = 0F;
+			padding2.Left = 0F;
+			padding2.Right = 0F;
+			padding2.Top = 0F;
+			skDefaultTooltip1.Padding = padding2;
+			skDefaultTooltip1.RemoveOnCompleted = false;
+			skDefaultTooltip1.RotateTransform = 0F;
+			skDefaultTooltip1.Wedge = 10;
+			skDefaultTooltip1.X = 0F;
+			skDefaultTooltip1.Y = 0F;
+			cartesianChart1.Tooltip = skDefaultTooltip1;
+			cartesianChart1.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
+			cartesianChart1.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
+			// 
 			// Form1
 			// 
 			AutoScaleDimensions = new SizeF(8F, 20F);
@@ -987,6 +1048,7 @@
 			panel5.PerformLayout();
 			panel6.ResumeLayout(false);
 			panel6.PerformLayout();
+			tabPage6.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -1066,5 +1128,7 @@
 		private Label lblValidationMSE;
 		private Label lblValidationMAE;
 		private Label lblValidationMinError;
+		private TabPage tabPage6;
+		private LiveChartsCore.SkiaSharpView.WinForms.CartesianChart cartesianChart1;
 	}
 }

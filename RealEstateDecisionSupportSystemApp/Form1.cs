@@ -1,4 +1,5 @@
 using LiveChartsCore;
+using LiveChartsCore.Defaults;
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.WinForms;
@@ -67,6 +68,7 @@ public partial class Form1 : Form
 		lblImpactNeighborhood.Text = "-";
 
 		CreateFeatureChartHost();
+		CreateActualVsPredictedChartHost();
 		InitializeHistory();
 		dataGridViewValidation.EnableHeadersVisualStyles = false;
 	}
@@ -181,6 +183,7 @@ public partial class Form1 : Form
 
 			FillCoefficientsTable(coeffs.Coefficients);
 			BuildFeatureImportanceChart(coeffs.Coefficients);
+
 			LoadValidationTable();
 
 			lblModelState.Text = "Модель обучена";
@@ -628,6 +631,22 @@ public partial class Form1 : Form
 		chartFeatures.Refresh();
 	}
 
+	private void CreateActualVsPredictedChartHost()
+	{
+		cartesianChart1 = new CartesianChart
+		{
+			Dock = DockStyle.Fill,
+			Visible = true
+		};
+
+		tabPage6.Controls.Clear();
+		tabPage6.Controls.Add(cartesianChart1);
+		cartesianChart1.BringToFront();
+
+		tabPage6.ResumeLayout();
+		tabPage6.PerformLayout();
+	}
+
 	private void CreateFeatureChartHost()
 	{
 		chartFeatures = new CartesianChart
@@ -782,6 +801,8 @@ public partial class Form1 : Form
 		lblValidationMSE.Text = $"MSE = {mse:N0} €²";
 		lblValidationMaxError.Text = $"Max Error = {maxError:N0} €";
 		lblValidationMinError.Text = $"Min Error = {minError:N0} €";
+
+		BuildActualVsPredictedChart(results);
 	}
 
 	private void InitializeHistory()
@@ -954,5 +975,62 @@ public partial class Form1 : Form
 		}
 
 		dataGridViewValidation.ClearSelection();
+	}
+
+	private void BuildActualVsPredictedChart(List<ValidationRow> results)
+	{
+		if (cartesianChart1 == null || results == null || results.Count == 0)
+			return;
+
+		var points = results
+			.Select(x => new ObservablePoint(x.RealPrice, x.PredictedPrice))
+			.ToArray();
+
+		float minValue = results.Min(x => Math.Min(x.RealPrice, x.PredictedPrice));
+		float maxValue = results.Max(x => Math.Max(x.RealPrice, x.PredictedPrice));
+
+		var diagonal = new ObservablePoint[]
+		{
+		new ObservablePoint(minValue, minValue),
+		new ObservablePoint(maxValue, maxValue)
+		};
+
+		cartesianChart1.Series = new ISeries[]
+		{
+		new ScatterSeries<ObservablePoint>
+		{
+			Name = "Объекты",
+			Values = points,
+			GeometrySize = 10
+		},
+		new LineSeries<ObservablePoint>
+		{
+			Name = "Идеальная линия",
+			Values = diagonal,
+			GeometrySize = 0
+		}
+		};
+
+		cartesianChart1.XAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Реальная цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart1.YAxes = new Axis[]
+		{
+		new Axis
+		{
+			Name = "Предсказанная цена (€)",
+			Labeler = value => value.ToString("N0")
+		}
+		};
+
+		cartesianChart1.LegendPosition = LegendPosition.Top;
+		cartesianChart1.Update();
+		cartesianChart1.Refresh();
 	}
 }
